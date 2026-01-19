@@ -26,9 +26,16 @@ public class UserService {
         String configPath = args[0];
         try{
             int port = ConfigReader.getPort(configPath, "UserService");
+            // new InetSocketAddress(port): combine the IP address and the port number
+            // Don't really need to specify the ip address
             HttpServer server = HttpServer.create(new InetSocketAddress(port),0);
             // Handle everything start with /user.
+            // routing logic of the microservice. Acts as a filter;
+            // Whenever an Http request comes in with a path that starts with /user, hand
+            // it over to the UserHandler object to deal with it.
             server.createContext("/user", new UserHandler());
+            // Determines how the UserServer handle concurrent requests;
+            // Executor: decide
             server.setExecutor(null);
             server.start();
             System.out.println("UserService is listening on port " + port);

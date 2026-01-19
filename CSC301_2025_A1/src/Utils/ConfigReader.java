@@ -26,8 +26,24 @@ public class ConfigReader {
         return Integer.parseInt(portValue);
     }
 
+    public static String getIp(String configFile, String serviceName) throws IOException {
+        String content = Files.readString(Paths.get(configFile));
+        // Find the start of the service block
+        int serviceIndex = content.indexOf("\""+serviceName+"\"");
+        if(serviceIndex==-1){
+            throw new RuntimeException("The service is not found");
+        }
+        int ipKeyIndex = content.indexOf("\"ip\"", serviceIndex);
+
+        int colonIndex = content.indexOf(":", ipKeyIndex);
+        int index1 = content.indexOf("}",colonIndex);
+        String ip = content.substring(colonIndex+1,index1).trim();
+        return ip;
+    }
+
     static void main() throws IOException {
-        System.out.println(getPort("config.json", "UserService"));
+//        System.out.println(getPort("config.json", "UserService"));
+        System.out.println(getIp("config.json", "UserService"));
     }
 }
 
