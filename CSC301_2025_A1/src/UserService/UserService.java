@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
 
 import Utils.ConfigReader;
 
@@ -35,8 +36,10 @@ public class UserService {
             // it over to the UserHandler object to deal with it.
             server.createContext("/user", new UserHandler());
             // Determines how the UserServer handle concurrent requests;
-            // Executor: decide
-            server.setExecutor(null);
+            // pass Executors.newFixedThreadPool(21) to it; it now maintains a pool of 21 dedicated worker threads
+            // it now maintains a pool of 21 dedicated worker thread
+            // Executor:
+            server.setExecutor(Executors.newFixedThreadPool(10));
             server.start();
             System.out.println("UserService is listening on port " + port);
         } catch (IOException e){

@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 public class UserHandler implements HttpHandler {
-    static HashMap<Integer, User> database = new HashMap<>();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -23,7 +22,7 @@ public class UserHandler implements HttpHandler {
                 handlePost(exchange);
             }
         }catch (Exception e){
-
+            System.out.println(e.getMessage());
         }
     }
 
@@ -37,7 +36,7 @@ public class UserHandler implements HttpHandler {
             return;
         }
         int id = Integer.parseInt(parts[2]);
-        User user = database.get(id);
+        User user = UserService.userDatabase.get(id);
 
         if(user!=null){
             sendResponse(exchange, 200, user.toJson());
