@@ -8,7 +8,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
 public class OrderService {
-    static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException {
         if(args.length < 1){
             System.out.println("The config file has some issues");
             return;

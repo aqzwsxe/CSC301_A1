@@ -25,8 +25,9 @@ case "$1" in
 
             # 2. Compile UserService (now it can find Utils in the $OUT_DIR)
             compile_service "UserService"
-#            compile_service "OrderService"
+            compile_service "OrderService"
 #            compile_service "ProductService"
+            compile_service "ISCS"
 
             echo "Done."
             read
@@ -42,14 +43,20 @@ case "$1" in
     -p)
             echo "Starting Product Service"
             java -cp "$OUT_DIR" ProductService.ProductService "$CONFIG"
+            echo  "Press enter to close"
+            read
             ;;
     -i)
             echo "Starting Inter-Service Communication Service (ISCS)"
             java -cp "$OUT_DIR" ISCS.ISCS "$CONFIG"
+            echo  "Press enter to close"
+            read
             ;;
     -o)
             echo "Starting Order Service"
             java -cp "$OUT_DIR" OrderService.OrderService "$CONFIG"
+            echo  "Press enter to close"
+            read
             ;;
 
     -w)
