@@ -41,6 +41,8 @@ public class WorkloadParser {
             String service = parts[0]; // USER, PRODUCT, or ORDER
             String command = parts[1]; // create get, update, delete or place order
 
+            // Although all the request will be sent to the OrderService first
+            // Still need to differ them here, because we need to build the path
             if(service.equals("USER")){
                 handleUser(command,parts);
             } else if (service.equals("ORDER")) {
@@ -51,6 +53,11 @@ public class WorkloadParser {
         }
     }
 
+
+    /*
+    *  This method build the jsonBody that will be sent to OrderService endpoint first. But eventually, the
+    *  jsonBody will be sent to the UserService
+    * */
     public static void handleUser(String command, String[] parts) throws IOException, URISyntaxException, InterruptedException {
         //build JSON and send to Order Service
         if(command.equals("get")){
@@ -89,6 +96,9 @@ public class WorkloadParser {
         }
     }
 
+    /*
+    * Build the jsonBody that will be sent to the OrderService. Eventually, the jsonBody will be sent to product service
+    * */
     public static void handleProduct(String command, String[] parts) throws IOException, URISyntaxException, InterruptedException {
         if(command.equalsIgnoreCase("get")){
             sendGetRequest("/product/" + parts[2]);
@@ -106,7 +116,9 @@ public class WorkloadParser {
     }
 
 
-
+    /*
+    * Specify the orderUrl. The requests will be sent to the Order Service
+    * */
     public static void sendGetRequest(String endpoint) throws IOException, InterruptedException, URISyntaxException {
         try {
             // when the code executes
@@ -134,6 +146,9 @@ public class WorkloadParser {
         }
     }
 
+    /*
+    * Specify the orderUrl. The request will be sent to the orderService
+    * */
     public static void sendPostRequest(String endpoint, String jsonBody){
         try{
             HttpRequest request  = HttpRequest.newBuilder()
