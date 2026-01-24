@@ -15,6 +15,8 @@ public class UserHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
+        System.out.println("[User] method: " + method);
+        System.out.println("[User] path: " + path);
         try {
             if(method.equals("GET")){
                 handleGet(exchange,path);

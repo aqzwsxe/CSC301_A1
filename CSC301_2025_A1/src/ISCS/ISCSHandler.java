@@ -48,6 +48,7 @@ public class ISCSHandler implements HttpHandler {
         String path = exchange.getRequestURI().getPath();
         String targetBaseUrl;
 
+
         if(path.startsWith("/user")){
             targetBaseUrl = userServiceUrl;
         }else if (path.startsWith("/product")){
@@ -57,6 +58,8 @@ public class ISCSHandler implements HttpHandler {
                 return;
            }
         URI targetUri = URI.create(targetBaseUrl + path);
+
+        System.out.println("[ISCS] Routing to: " + targetUri);
         try {
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(targetUri);
 

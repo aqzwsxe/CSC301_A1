@@ -30,6 +30,9 @@ public class OrderHandler implements HttpHandler {
         String path = exchange.getRequestURI().getPath();
         URI targetUri = URI.create(iscsUrl + path);
 
+        System.out.println("[Order] Forwarding to ISCS...");
+        System.out.println("The targetUri: " + targetUri);
+
         try {
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(targetUri);
             if(method.equalsIgnoreCase("POST")){
