@@ -105,7 +105,9 @@ public class UserHandler implements HttpHandler {
     }
 
     private void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
-        byte[] bytes = response.getBytes(StandardCharsets.UTF_8);
+        // Add new line character, so the terminal prompt will start a new line
+        String response1 = response + "\n";
+        byte[] bytes = response1.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type","application/json");
         exchange.sendResponseHeaders(statusCode, bytes.length);
         try(OutputStream os = exchange.getResponseBody()){
@@ -150,6 +152,7 @@ public class UserHandler implements HttpHandler {
         String newEmail = getJsonValue(body, "email");
         String newPassword = getJsonValue(body, "password");
 
+        // According to the instruction: only update the info that are exist
         if(newUsername!=null){
             user.setUsername(newUsername);
         }
