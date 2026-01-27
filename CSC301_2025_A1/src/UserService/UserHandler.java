@@ -37,21 +37,35 @@ public class UserHandler implements HttpHandler {
             sendResponse(exchange, 400, "{}");
             return;
         }
-        int id = Integer.parseInt(parts[2]);
-        User user = UserService.userDatabase.get(id);
-        String res1 = String.format("{\n" +
-                "        \"id\": %d,\n" +
-                "        \"username\": \"%s\",\n" +
-                "        \"email\": \"%s\",\n" +
-                "        \"password\": \"%s\"\n" +
-                "    }", user.getId(), user.getUsername(), user.getEmail(), user.getPassword());
+        try {
+            int id = Integer.parseInt(parts[2]);
+            User user = UserService.userDatabase.get(id);
+            // 404 or 400
+            if(user==null){
+                sendResponse(exchange, 404, "{}");
+                return;
+            }
+            String res1 = String.format("{\n" +
+                    "        \"id\": %d,\n" +
+                    "        \"username\": \"%s\",\n" +
+                    "        \"email\": \"%s\",\n" +
+                    "        \"password\": \"%s\"\n" +
+                    "    }", user.getId(), user.getUsername(), user.getEmail(), user.getPassword());
 
-        if(user!=null){
-            sendResponse(exchange, 200, user.toJson());
+            if(user!=null){
+                sendResponse(exchange, 200, res1);
+                return;
+            }
+            else{
+                sendResponse(exchange,404, "{}");
+                return;
+            }
+        }catch (NumberFormatException e){
+            sendResponse(exchange, 400, "{}");
+            return;
         }
-        else{
-            sendResponse(exchange,404, "{}");
-        }
+
+
     }
     // bridge the gap between a raw HTTP request and the User data
     // handle both Get requests and the Post requests
@@ -84,6 +98,7 @@ public class UserHandler implements HttpHandler {
                 break;
             default:
                 sendResponse(exchange, 400, "{}");
+                return;
 
         }
 
@@ -137,6 +152,11 @@ public class UserHandler implements HttpHandler {
             sendResponse(exchange,400, "{}");
             return;
         }
+        if (!email.contains("com")){
+            sendResponse(exchange,400, "{}");
+            return;
+        }
+
 
 
         User newUser = new User(id, username, email, password);
@@ -148,6 +168,7 @@ public class UserHandler implements HttpHandler {
                 "        \"password\": \"%s\"\n" +
                 "    }", id, username, email, password);
         sendResponse(exchange, 200, res1);
+        return;
 
 
     }
@@ -162,6 +183,17 @@ public class UserHandler implements HttpHandler {
         String newUsername = getJsonValue(body, "username");
         String newEmail = getJsonValue(body, "email");
         String newPassword = getJsonValue(body, "password");
+
+        if (newEmail!=null && (newEmail.isEmpty() || !newEmail.contains("com"))) {
+            sendResponse(exchange, 400, "{}");
+            return;
+        }
+
+        if(newPassword != null && newPassword.isEmpty()){
+            sendResponse(exchange, 400, "{}");
+            return;
+        }
+
 
         // According to the instruction: only update the info that are exist
         if(newUsername!=null){
@@ -178,19 +210,27 @@ public class UserHandler implements HttpHandler {
                 "        \"username\": \"%s\",\n" +
                 "        \"email\": \"%s\",\n" +
                 "        \"password\": \"%s\"\n" +
-                "    }", id, username, email, password);
+                "    }", id, user.getUsername(), user.getEmail(), user.getPassword());
         sendResponse(exchange, 200, res1);
+        return;
     }
 
     public void handleDelete(HttpExchange exchange, int id, String body) throws IOException {
         User user = UserService.userDatabase.get(id);
         if(user==null){
             sendResponse(exchange,404, "{}");
+            return;
         }
+
 
         String reqUser = getJsonValue(body,"username");
         String reqEmail = getJsonValue(body, "email");
         String reqPassword = getJsonValue(body, "password");
+
+        if(reqEmail == null){
+            sendResponse(exchange, 400, "{}");
+            return;
+        }
 
         boolean match = user.getUsername().equals(reqUser)&&
                 user.getEmail().equals(reqEmail)&&
@@ -198,9 +238,11 @@ public class UserHandler implements HttpHandler {
 
         if(match){
             UserService.userDatabase.remove(id);
-            sendResponse(exchange, 200, "{");
+            sendResponse(exchange, 200, "{}");
+            return;
         } else{
-            sendResponse(exchange, 401, "{"}");
+            sendResponse(exchange, 401, "{}");
+            return;
         }
 
     }
