@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 public class ProductHandler implements HttpHandler {
-    String errorResponse = "{}";
+    String errorResponse = "{}\n";
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -31,7 +31,7 @@ public class ProductHandler implements HttpHandler {
         String[] parts = path.split("/");
         if(parts.length < 3){
             // SendResponse
-            sendResponse(exchange, 400, "{}");
+            sendResponse(exchange, 400, errorResponse);
             return;
         }
         String idStr = parts[2];
@@ -136,9 +136,9 @@ public class ProductHandler implements HttpHandler {
         }
     }
 
-    private Boolean inputContentCheck(String body){
+    private Boolean inputContentCheck(String body, Boolean desc_matter){
         // Name issues:
-        String name = getJsonValue(body, "productname");
+        String name = getJsonValue(body, "name");
         if (name == null) {
             return false;
         } else {
@@ -148,14 +148,17 @@ public class ProductHandler implements HttpHandler {
         }
 
         // Description issues:
-        String description = getJsonValue(body, "description");
-        if (description == null) {
-            return false;
-        } else {
-            if (description.isEmpty()) {
+        if (desc_matter) {
+            String description = getJsonValue(body, "description");
+            if (description == null) {
                 return false;
+            } else {
+                if (description.isEmpty()) {
+                    return false;
+                }
             }
         }
+
 
         // Price issues:
         String priceStr = getJsonValue(body, "price");
@@ -199,8 +202,8 @@ public class ProductHandler implements HttpHandler {
             return;
         }
 
-        if (inputContentCheck(body)) {
-            String name = getJsonValue(body, "productname");
+        if (inputContentCheck(body, true)) {
+            String name = getJsonValue(body, "name");
             String description = getJsonValue(body, "description");
             float price = Float.parseFloat(getJsonValue(body, "price"));
             int quantity = Integer.parseInt(getJsonValue(body, "quantity"));
@@ -221,8 +224,8 @@ public class ProductHandler implements HttpHandler {
             return;
         }
 
-        if (inputContentCheck(body)) {
-            String name = getJsonValue(body, "productname");
+        if (inputContentCheck(body, true)) {
+            String name = getJsonValue(body, "name");
             String description = getJsonValue(body, "description");
             float price = Float.parseFloat(getJsonValue(body, "price"));
             int quantity = Integer.parseInt(getJsonValue(body, "quantity"));
@@ -246,17 +249,17 @@ public class ProductHandler implements HttpHandler {
             return;
         }
 
-        if (inputContentCheck(body)) {
-            String name = getJsonValue(body, "productname");
-            String description = getJsonValue(body, "description");
+        if (inputContentCheck(body, false)) {
+            String name = getJsonValue(body, "name");
+//            String description = getJsonValue(body, "description");
             float price = Float.parseFloat(getJsonValue(body, "price"));
             int quantity = Integer.parseInt(getJsonValue(body, "quantity"));
 
-            if (product.getName().equals(name) && product.getDescription().equals(description) &&
-                    product.getPrice() == price && product.getQuantity() == quantity) {
+            if (product.getName().equals(name)  && product.getPrice() == price &&
+                    product.getQuantity() == quantity) { // && product.getDescription().equals(description)
                 ProductService.productDatabase.remove(id);
             }
-            sendResponse(exchange, 200, "{}");
+            sendResponse(exchange, 200, "{}\n");
         } else {
             sendResponse(exchange,400, errorResponse);
         }
