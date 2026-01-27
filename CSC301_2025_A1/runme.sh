@@ -26,7 +26,7 @@ case "$1" in
             # 2. Compile UserService (now it can find Utils in the $OUT_DIR)
             compile_service "UserService"
             compile_service "OrderService"
-#            compile_service "ProductService"
+            compile_service "ProductService"
             compile_service "ISCS"
 
             echo "Done."
@@ -66,5 +66,6 @@ case "$1" in
             fi
             echo "Starting Workload Parser with file: $2"
             java -cp "$OUT_DIR" Utils.WorkloadParser "$2"
+            echo  "Press enter to close"
             ;;
 esac
