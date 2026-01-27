@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class UserHandler implements HttpHandler {
@@ -28,7 +31,11 @@ public class UserHandler implements HttpHandler {
         }
     }
 
-
+    private String hash_helper(String password1) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA256");
+        String hashed_password = Arrays.toString(md.digest(password1.getBytes(StandardCharsets.UTF_8)));
+        return hashed_password;
+    }
 
     private void handleGet(HttpExchange exchange, String path) throws IOException {
         String[] parts = path.split("/");
@@ -45,12 +52,13 @@ public class UserHandler implements HttpHandler {
                 sendResponse(exchange, 404, "{}");
                 return;
             }
+            String hashed_password = hash_helper(user.getPassword());
             String res1 = String.format("{\n" +
                     "        \"id\": %d,\n" +
                     "        \"username\": \"%s\",\n" +
                     "        \"email\": \"%s\",\n" +
                     "        \"password\": \"%s\"\n" +
-                    "    }", user.getId(), user.getUsername(), user.getEmail(), user.getPassword());
+                    "    }", user.getId(), user.getUsername(), user.getEmail(), hashed_password);
 
             if(user!=null){
                 sendResponse(exchange, 200, res1);
@@ -63,6 +71,8 @@ public class UserHandler implements HttpHandler {
         }catch (NumberFormatException e){
             sendResponse(exchange, 400, "{}");
             return;
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
 
 
@@ -71,7 +81,7 @@ public class UserHandler implements HttpHandler {
     // handle both Get requests and the Post requests
 
 
-    private void handlePost(HttpExchange exchange) throws IOException {
+    private void handlePost(HttpExchange exchange) throws IOException, NoSuchAlgorithmException {
         InputStream is = exchange.getRequestBody();
         String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
 
@@ -137,7 +147,7 @@ public class UserHandler implements HttpHandler {
     }
 
 
-    public  void  handleCreate(HttpExchange exchange, int id, String body) throws IOException {
+    public  void  handleCreate(HttpExchange exchange, int id, String body) throws IOException, NoSuchAlgorithmException {
         if(UserService.userDatabase.containsKey(id)){
             sendResponse(exchange,409,"{}");
             return;
@@ -161,12 +171,13 @@ public class UserHandler implements HttpHandler {
 
         User newUser = new User(id, username, email, password);
         UserService.userDatabase.put(id,newUser);
+        String hashed_password = hash_helper(password);
         String res1 = String.format("{\n" +
                 "        \"id\": %d,\n" +
                 "        \"username\": \"%s\",\n" +
                 "        \"email\": \"%s\",\n" +
                 "        \"password\": \"%s\"\n" +
-                "    }", id, username, email, password);
+                "    }", id, username, email, hashed_password);
         sendResponse(exchange, 200, res1);
         return;
 
