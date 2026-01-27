@@ -33,8 +33,16 @@ public class UserHandler implements HttpHandler {
 
     private String hash_helper(String password1) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA256");
-        String hashed_password = Arrays.toString(md.digest(password1.getBytes(StandardCharsets.UTF_8)));
-        return hashed_password;
+        byte[] hashBytes = md.digest(password1.getBytes(StandardCharsets.UTF_8));
+        StringBuilder hexString = new StringBuilder();
+        for(byte b: hashBytes){
+            String hex = Integer.toHexString(0xff & b);
+            if(hex.length()==1){
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString().toUpperCase();
     }
 
     private void handleGet(HttpExchange exchange, String path) throws IOException {
@@ -184,7 +192,7 @@ public class UserHandler implements HttpHandler {
 
     }
 
-    public  void handleUpdate(HttpExchange exchange, int id, String body) throws IOException {
+    public  void handleUpdate(HttpExchange exchange, int id, String body) throws IOException, NoSuchAlgorithmException {
         User user = UserService.userDatabase.get(id);
         if(user==null){
             sendResponse(exchange, 404, "{}");
@@ -216,17 +224,18 @@ public class UserHandler implements HttpHandler {
         if(newPassword != null){
             user.setPassword(newPassword);
         }
+        String hashed_password = hash_helper(user.getPassword());
         String res1 = String.format("{\n" +
                 "        \"id\": %d,\n" +
                 "        \"username\": \"%s\",\n" +
                 "        \"email\": \"%s\",\n" +
                 "        \"password\": \"%s\"\n" +
-                "    }", id, user.getUsername(), user.getEmail(), user.getPassword());
+                "    }", id, user.getUsername(), user.getEmail(), hashed_password);
         sendResponse(exchange, 200, res1);
         return;
     }
 
-    public void handleDelete(HttpExchange exchange, int id, String body) throws IOException {
+    public void handleDelete(HttpExchange exchange, int id, String body) throws IOException, NoSuchAlgorithmException {
         User user = UserService.userDatabase.get(id);
         if(user==null){
             sendResponse(exchange,404, "{}");
@@ -242,10 +251,12 @@ public class UserHandler implements HttpHandler {
             sendResponse(exchange, 400, "{}");
             return;
         }
+        String hashedStored = hash_helper(user.getPassword());
+        String hashedIncoming = hash_helper(reqPassword);
 
-        boolean match = user.getUsername().equals(reqUser)&&
-                user.getEmail().equals(reqEmail)&&
-                user.getPassword().equalsIgnoreCase(reqPassword);
+        boolean match = user.getUsername().equals(reqUser) &&
+                user.getEmail().equals(reqEmail) &&
+                hashedStored.equals(hashedIncoming);
 
         if(match){
             UserService.userDatabase.remove(id);
