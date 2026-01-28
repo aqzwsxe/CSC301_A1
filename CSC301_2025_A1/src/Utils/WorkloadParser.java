@@ -31,19 +31,24 @@ public class WorkloadParser {
         String configPath = "config.json";
         int port = ConfigReader.getPort(configPath, "OrderService");
         String ip = ConfigReader.getIp(configPath, "OrderService");
+        ip = ip.replace("\"","").trim();
         orderUrl = "http://" + ip + ":" + port;
-        while (sc.hasNextLine()){
+        while (sc.hasNextLine()) {
             String line = sc.nextLine().trim();
-            if(line.isEmpty()){
+            if (line.isEmpty()) {
                 continue;
             }
-            String[] parts = line.split(" ");
+
+            if(line.startsWith("[")){
+                line = line.substring(line.indexOf("]")+1).trim();
+            }
+            String[] parts = line.split("\\s+"); // split by any whitespace
             String service = parts[0]; // USER, PRODUCT, or ORDER
             String command = parts[1]; // create get, update, delete or place order
 
             // Although all the request will be sent to the OrderService first
             // Still need to differ them here, because we need to build the path
-            if(service.equals("USER")){
+            if (service.equals("USER")) {
                 handleUser(command,parts);
             } else if (service.equals("ORDER")) {
                 handleOrder(parts);
@@ -60,38 +65,44 @@ public class WorkloadParser {
     * */
     public static void handleUser(String command, String[] parts) throws IOException, URISyntaxException, InterruptedException {
         //build JSON and send to Order Service
-        if(command.equals("get")){
+        System.out.println("The handleUser method is called inside the parser");
+        if (command.equals("get")) {
             sendGetRequest("/user/"+parts[2]);
-        }else{
+        } else {
             String jsonBody = "";
-            if(command.equals("create")||command.equals("delete")){
+            if (command.equals("create")||command.equals("delete")) {
                 jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
                         command, parts[2], parts[3], parts[4], parts[5]);
-            } else if(command.equals("update")){
-                String id = parts[2];
-                String username = parts[3].replace("username:","");
-                String email = parts[4].replace("email:","");
-                String password = parts[5].replace("password:","");
-                jsonBody = String.format(
-                        "{\"command\":\"update\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
-                        id, username, email, password
-                );
+            } else if (command.equals("update")) {
+                StringBuilder json_builder = new StringBuilder(String.format("{\"command\":\"update\",\"id\":%s", parts[2]));
+                for(int i = 3; i< parts.length; i++){
+                    String[] key_val = parts[i].split(":");
+                    if(key_val.length == 2){
+                        json_builder.append(String.format(",\"%s\":\"%s\"", key_val[0], key_val[1]));
+                    }
+                }
+                json_builder.append("}");
+                sendPostRequest("/user", json_builder.toString());
             }
-            sendPostRequest("/user", jsonBody);
+
         }
     }
 
-
-
-
     public static void handleOrder(String[] parts) throws IOException, URISyntaxException, InterruptedException {
         //build JSON and send to Order Service
-        if(parts[1].equals("get")){
-            sendGetRequest("/order/" + parts[2]);
-        }else if(parts[1].equals("place") && parts[2].equals("order")){
+        //ORDER place <product_id> <user_id> <quantity>
+//        if(parts[1].equals("get")){ // I don't think there is a get for ORDER check WorkLoadTemplate.txt
+//            sendGetRequest("/order/" + parts[2]);
+//        }else if(parts[1].equals("place") && parts[2].equals("order")){
+//            String jsonBody = String.format(
+//                    "{\"command\":\"place order\",\"user_id\":%s,\"product_id\":%s,\"quantity\":%s}",
+//                    parts[3], parts[4], parts[5]);
+//            sendPostRequest("/order", jsonBody);
+//        }
+        if (parts[1].equals("place")) { // I don't think there is a get for ORDER check WorkLoadTemplate.txt
             String jsonBody = String.format(
                     "{\"command\":\"place order\",\"user_id\":%s,\"product_id\":%s,\"quantity\":%s}",
-                    parts[3], parts[4], parts[5]);
+                    parts[3], parts[2], parts[4]);
             sendPostRequest("/order", jsonBody);
         }
     }
@@ -100,16 +111,42 @@ public class WorkloadParser {
     * Build the jsonBody that will be sent to the OrderService. Eventually, the jsonBody will be sent to product service
     * */
     public static void handleProduct(String command, String[] parts) throws IOException, URISyntaxException, InterruptedException {
-        if(command.equalsIgnoreCase("get")){
+        if (command.equalsIgnoreCase("info")) {
             sendGetRequest("/product/" + parts[2]);
-        }else{
+        } else if (command.equalsIgnoreCase("create")) {
             String id = parts[2];
-            String name = parts[3].replace("productname:","");
-            String price = parts[4].replace("price:","");
-            String quantity = parts[5].replace("quantity", "");
+            String name = parts[3];
+            String description = parts[4];
+            String price = parts[5];
+            String quantity = parts[6];
             String json = String.format(
-                    "{\"command\":\"%s\",\"id\":%s,\"productname\":\"%s\",\"price\":%s,\"quantity\":%s}",
-                    command, id, name, price, quantity
+                    "{\"command\":\"create\"," +
+                            "\"id\":%s," +
+                            "\"name\":\"%s\"," +
+                            "\"description\":\"%s\"," +
+                            "\"price\":%s," +
+                            "\"quantity\":%s}",
+                    id, name, description, price, quantity
+            );
+            sendPostRequest("/product", json);
+        } else if (command.equalsIgnoreCase("update")) {
+            StringBuilder json_builder = new StringBuilder(String.format("{\"command\":\"update\",\"id\":%s", parts[2]));
+            for(int i = 3; i < parts.length; i++){
+                String[] key_val = parts[i].split(":");
+                if(key_val.length == 2){
+                    if(key_val[0].equals("price")||key_val[0].equals("quantity")){
+                        json_builder.append(String.format(",\"%s\":%s", key_val[0], key_val[1]));
+                    }else{
+                        json_builder.append(String.format(",\"%s\":\"%s\"", key_val[0], key_val[1]));
+                    }
+                }
+            }
+            json_builder.append("}");
+            sendPostRequest("/product", json_builder.toString());
+        } else if (command.equalsIgnoreCase("delete")) {
+            String json = String.format(
+                    "{\"command\":\"delete\",\"id\":%s,\"name\":\"%s\",\"price\":%s,\"quantity\":%s}",
+                    parts[2], parts[3], parts[4], parts[5]
             );
             sendPostRequest("/product", json);
         }
@@ -132,8 +169,9 @@ public class WorkloadParser {
             // Structure of URI
             // 1: Scheme: http (specifies the protocol/method of access)
             // 2: Authority: the IP address and port; For example, 127.0.0.1(IP):14000(port);
+            String fullUrl = (orderUrl + endpoint).replaceAll("\\s", "");
             HttpRequest request1 = HttpRequest.newBuilder().
-                    uri(URI.create(orderUrl+endpoint)).
+                    uri(URI.create(fullUrl)).
                     GET().build();
             // Execution phase; HttpRequest defines what to do; this line actually does it
             // client.send(): synchronous; the program pauses on this line until the order service
@@ -141,7 +179,7 @@ public class WorkloadParser {
             HttpResponse<String> response = client.send(request1, HttpResponse.BodyHandlers.ofString());
             System.out.println("GET " + endpoint + " | Status: " + response.statusCode());
             System.out.println("Data: " + response.body());
-        }catch (Exception e){
+        } catch (Exception e) {
             System.err.println("Error sending GET request: "+ e.getMessage());
         }
     }
@@ -150,18 +188,20 @@ public class WorkloadParser {
     * Specify the orderUrl. The request will be sent to the orderService
     * */
     public static void sendPostRequest(String endpoint, String jsonBody){
-        try{
+        try {
+            String fullUrl = (orderUrl + endpoint).replaceAll("\\s", "");
+
             HttpRequest request  = HttpRequest.newBuilder()
-                    .uri(URI.create(orderUrl+endpoint))
+                    .uri(URI.create(fullUrl))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println("POST " + endpoint + "| Status: " + response.statusCode());
+            System.out.println("POST " + endpoint + " | Status: " + response.statusCode());
             if(response.statusCode() != 200){
                 System.out.println("Response Body: " + response.body());
             }
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
     }

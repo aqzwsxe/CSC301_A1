@@ -28,8 +28,10 @@ case "$1" in
             compile_service "OrderService"
             compile_service "ProductService"
             compile_service "ISCS"
+            compile_service "Utils"
 
             echo "Done."
+            echo  "Press enter to close"
             read
             ;;
 
@@ -66,6 +68,10 @@ case "$1" in
             fi
             echo "Starting Workload Parser with file: $2"
             java -cp "$OUT_DIR" Utils.WorkloadParser "$2"
-            echo  "Press enter to close"
             ;;
+    *)
+            echo "used a wrong command"
+            exit  1;
+            ;;
+
 esac

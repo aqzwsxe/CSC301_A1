@@ -22,6 +22,7 @@ public class UserHandler implements HttpHandler {
         System.out.println("[User] path: " + path);
         try {
             if(method.equals("GET")){
+                System.out.println("Try to call handle get");
                 handleGet(exchange,path);
             } else if (method.equals("POST")) {
                 handlePost(exchange);
@@ -43,6 +44,21 @@ public class UserHandler implements HttpHandler {
             hexString.append(hex);
         }
         return hexString.toString().toUpperCase();
+    }
+
+    /*
+    * Check if an email is valid; Every email should have exact 1 "@" sign
+    * */
+    private boolean checkEmail(String str1){
+        int counter = 0 ;
+        char target = '@';
+        for(int i = 0; i < str1.length(); i++){
+            char temp = str1.charAt(i);
+            if (temp==target){
+                counter++;
+            }
+        }
+        return counter==1;
     }
 
     private void handleGet(HttpExchange exchange, String path) throws IOException {
@@ -92,6 +108,7 @@ public class UserHandler implements HttpHandler {
     private void handlePost(HttpExchange exchange) throws IOException, NoSuchAlgorithmException {
         InputStream is = exchange.getRequestBody();
         String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        System.out.println("inside the handlePost: "+body);
 
         String command = getJsonValue(body, "command");
         String idStr = getJsonValue(body, "id");
@@ -170,7 +187,7 @@ public class UserHandler implements HttpHandler {
             sendResponse(exchange,400, "{}");
             return;
         }
-        if (!email.contains("com")){
+        if (!checkEmail(email)){
             sendResponse(exchange,400, "{}");
             return;
         }
@@ -202,8 +219,9 @@ public class UserHandler implements HttpHandler {
         String newUsername = getJsonValue(body, "username");
         String newEmail = getJsonValue(body, "email");
         String newPassword = getJsonValue(body, "password");
-
-        if (newEmail!=null && (newEmail.isEmpty() || !newEmail.contains("com"))) {
+        // 1: if the email has an invalid type (the email does not have exact one @)
+        // 2: newEmail if empty
+        if (newEmail!=null && (newEmail.isEmpty() || !checkEmail(newEmail))) {
             sendResponse(exchange, 400, "{}");
             return;
         }
@@ -247,7 +265,7 @@ public class UserHandler implements HttpHandler {
         String reqEmail = getJsonValue(body, "email");
         String reqPassword = getJsonValue(body, "password");
 
-        if(reqEmail == null){
+        if(reqUser == null || reqEmail == null || reqPassword == null){
             sendResponse(exchange, 400, "{}");
             return;
         }
