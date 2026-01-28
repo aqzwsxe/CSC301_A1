@@ -71,8 +71,10 @@ public class WorkloadParser {
         } else {
             String jsonBody = "";
             if (command.equals("create")||command.equals("delete")) {
+                System.out.println();
                 jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
                         command, parts[2], parts[3], parts[4], parts[5]);
+                sendPostRequest("/user", jsonBody);
             } else if (command.equals("update")) {
                 StringBuilder json_builder = new StringBuilder(String.format("{\"command\":\"update\",\"id\":%s", parts[2]));
                 for(int i = 3; i< parts.length; i++){
