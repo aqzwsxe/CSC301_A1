@@ -168,8 +168,9 @@ public class WorkloadParser {
             // Structure of URI
             // 1: Scheme: http (specifies the protocol/method of access)
             // 2: Authority: the IP address and port; For example, 127.0.0.1(IP):14000(port);
+            String fullUrl = (orderUrl + endpoint).replaceAll("\\s", "");
             HttpRequest request1 = HttpRequest.newBuilder().
-                    uri(URI.create(orderUrl+endpoint)).
+                    uri(URI.create(fullUrl)).
                     GET().build();
             // Execution phase; HttpRequest defines what to do; this line actually does it
             // client.send(): synchronous; the program pauses on this line until the order service
@@ -187,13 +188,15 @@ public class WorkloadParser {
     * */
     public static void sendPostRequest(String endpoint, String jsonBody){
         try {
+            String fullUrl = (orderUrl + endpoint).replaceAll("\\s", "");
+
             HttpRequest request  = HttpRequest.newBuilder()
-                    .uri(URI.create(orderUrl+endpoint))
+                    .uri(URI.create(fullUrl))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println("POST " + endpoint + "| Status: " + response.statusCode());
+            System.out.println("POST " + endpoint + " | Status: " + response.statusCode());
             if(response.statusCode() != 200){
                 System.out.println("Response Body: " + response.body());
             }
