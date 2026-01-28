@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 public class ProductHandler implements HttpHandler {
-    String errorResponse = "{}";
+    String errorResponse = "{}\n";
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -31,7 +31,7 @@ public class ProductHandler implements HttpHandler {
         String[] parts = path.split("/");
         if(parts.length < 3){
             // SendResponse
-            sendResponse(exchange, 400, "{}");
+            sendResponse(exchange, 400, errorResponse);
             return;
         }
         String idStr = parts[2];
@@ -256,7 +256,7 @@ public class ProductHandler implements HttpHandler {
                     product.getPrice() == price && product.getQuantity() == quantity) {
                 ProductService.productDatabase.remove(id);
             }
-            sendResponse(exchange, 200, "{}");
+            sendResponse(exchange, 200, "{}\n");
         } else {
             sendResponse(exchange,400, errorResponse);
         }
