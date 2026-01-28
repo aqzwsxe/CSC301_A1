@@ -30,6 +30,9 @@ public class OrderHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         byte[] requestBody = exchange.getRequestBody().readAllBytes();
         String bodyString = new String(requestBody, StandardCharsets.UTF_8);
+        System.out.println("The Order handle method: " );
+        System.out.println("method "+ method);
+        System.out.println("The bodyString: "+ bodyString);
         try {
             if(method.equalsIgnoreCase("POST") && bodyString.contains("place order")){
                 handlePlaceOrder(exchange, bodyString);
@@ -59,6 +62,7 @@ public class OrderHandler implements HttpHandler {
             String userId = getJsonValue(body, "user_id");
             String productId = getJsonValue(body, "product_id");
             String quantityStr = getJsonValue(body, "quantity");
+            Order order = new Order()
 
             if(userId==null || productId == null || quantityStr == null){
                 sendError(exchange,400, "Invalid Request");
