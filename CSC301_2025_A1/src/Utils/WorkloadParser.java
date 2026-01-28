@@ -81,9 +81,6 @@ public class WorkloadParser {
         }
     }
 
-
-
-
     public static void handleOrder(String[] parts) throws IOException, URISyntaxException, InterruptedException {
         //build JSON and send to Order Service
         //ORDER place <product_id> <user_id> <quantity>
@@ -109,7 +106,7 @@ public class WorkloadParser {
     public static void handleProduct(String command, String[] parts) throws IOException, URISyntaxException, InterruptedException {
         if (command.equalsIgnoreCase("info")) {
             sendGetRequest("/product/" + parts[2]);
-        } else if (command.equalsIgnoreCase("create")){
+        } else if (command.equalsIgnoreCase("create")) {
             String id = parts[2];
             String name = parts[3];
             String description = parts[4];
@@ -125,7 +122,7 @@ public class WorkloadParser {
                     id, name, description, price, quantity
             );
             sendPostRequest("/product", json);
-        } else if (command.equalsIgnoreCase("update")){
+        } else if (command.equalsIgnoreCase("update")) {
             String id = parts[2];
             String name = parts[3].replace("name:","");
             String description = parts[4].replace("description:","");
@@ -141,7 +138,7 @@ public class WorkloadParser {
                     id, name, description, price, quantity
             );
             sendPostRequest("/product", json);
-        } else if (command.equalsIgnoreCase("delete")){
+        } else if (command.equalsIgnoreCase("delete")) {
             String id = parts[2];
             String name = parts[3];
             String price = parts[4];
@@ -184,7 +181,7 @@ public class WorkloadParser {
             HttpResponse<String> response = client.send(request1, HttpResponse.BodyHandlers.ofString());
             System.out.println("GET " + endpoint + " | Status: " + response.statusCode());
             System.out.println("Data: " + response.body());
-        }catch (Exception e){
+        } catch (Exception e) {
             System.err.println("Error sending GET request: "+ e.getMessage());
         }
     }
@@ -193,7 +190,7 @@ public class WorkloadParser {
     * Specify the orderUrl. The request will be sent to the orderService
     * */
     public static void sendPostRequest(String endpoint, String jsonBody){
-        try{
+        try {
             HttpRequest request  = HttpRequest.newBuilder()
                     .uri(URI.create(orderUrl+endpoint))
                     .header("Content-Type", "application/json")
@@ -204,7 +201,7 @@ public class WorkloadParser {
             if(response.statusCode() != 200){
                 System.out.println("Response Body: " + response.body());
             }
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
     }
