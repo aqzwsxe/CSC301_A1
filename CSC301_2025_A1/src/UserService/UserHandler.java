@@ -22,6 +22,7 @@ public class UserHandler implements HttpHandler {
         System.out.println("[User] path: " + path);
         try {
             if(method.equals("GET")){
+                System.out.println("Try to call handle get");
                 handleGet(exchange,path);
             } else if (method.equals("POST")) {
                 handlePost(exchange);
@@ -107,6 +108,7 @@ public class UserHandler implements HttpHandler {
     private void handlePost(HttpExchange exchange) throws IOException, NoSuchAlgorithmException {
         InputStream is = exchange.getRequestBody();
         String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        System.out.println("inside the handlePost: "+body);
 
         String command = getJsonValue(body, "command");
         String idStr = getJsonValue(body, "id");
