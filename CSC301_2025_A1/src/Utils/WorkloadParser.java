@@ -32,9 +32,9 @@ public class WorkloadParser {
         int port = ConfigReader.getPort(configPath, "OrderService");
         String ip = ConfigReader.getIp(configPath, "OrderService");
         orderUrl = "http://" + ip + ":" + port;
-        while (sc.hasNextLine()){
+        while (sc.hasNextLine()) {
             String line = sc.nextLine().trim();
-            if(line.isEmpty()){
+            if (line.isEmpty()) {
                 continue;
             }
             String[] parts = line.split(" ");
@@ -43,7 +43,7 @@ public class WorkloadParser {
 
             // Although all the request will be sent to the OrderService first
             // Still need to differ them here, because we need to build the path
-            if(service.equals("USER")){
+            if (service.equals("USER")) {
                 handleUser(command,parts);
             } else if (service.equals("ORDER")) {
                 handleOrder(parts);
@@ -60,14 +60,14 @@ public class WorkloadParser {
     * */
     public static void handleUser(String command, String[] parts) throws IOException, URISyntaxException, InterruptedException {
         //build JSON and send to Order Service
-        if(command.equals("get")){
+        if (command.equals("get")) {
             sendGetRequest("/user/"+parts[2]);
-        }else{
+        } else {
             String jsonBody = "";
-            if(command.equals("create")||command.equals("delete")){
+            if (command.equals("create")||command.equals("delete")) {
                 jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
                         command, parts[2], parts[3], parts[4], parts[5]);
-            } else if(command.equals("update")){
+            } else if (command.equals("update")) {
                 String id = parts[2];
                 String username = parts[3].replace("username:","");
                 String email = parts[4].replace("email:","");
@@ -86,12 +86,19 @@ public class WorkloadParser {
 
     public static void handleOrder(String[] parts) throws IOException, URISyntaxException, InterruptedException {
         //build JSON and send to Order Service
-        if(parts[1].equals("get")){
-            sendGetRequest("/order/" + parts[2]);
-        }else if(parts[1].equals("place") && parts[2].equals("order")){
+        //ORDER place <product_id> <user_id> <quantity>
+//        if(parts[1].equals("get")){ // I don't think there is a get for ORDER check WorkLoadTemplate.txt
+//            sendGetRequest("/order/" + parts[2]);
+//        }else if(parts[1].equals("place") && parts[2].equals("order")){
+//            String jsonBody = String.format(
+//                    "{\"command\":\"place order\",\"user_id\":%s,\"product_id\":%s,\"quantity\":%s}",
+//                    parts[3], parts[4], parts[5]);
+//            sendPostRequest("/order", jsonBody);
+//        }
+        if (parts[1].equals("place")) { // I don't think there is a get for ORDER check WorkLoadTemplate.txt
             String jsonBody = String.format(
                     "{\"command\":\"place order\",\"user_id\":%s,\"product_id\":%s,\"quantity\":%s}",
-                    parts[3], parts[4], parts[5]);
+                    parts[3], parts[2], parts[4]);
             sendPostRequest("/order", jsonBody);
         }
     }
@@ -100,16 +107,52 @@ public class WorkloadParser {
     * Build the jsonBody that will be sent to the OrderService. Eventually, the jsonBody will be sent to product service
     * */
     public static void handleProduct(String command, String[] parts) throws IOException, URISyntaxException, InterruptedException {
-        if(command.equalsIgnoreCase("get")){
+        if (command.equalsIgnoreCase("info")) {
             sendGetRequest("/product/" + parts[2]);
-        }else{
+        } else if (command.equalsIgnoreCase("create")){
             String id = parts[2];
-            String name = parts[3].replace("productname:","");
-            String price = parts[4].replace("price:","");
-            String quantity = parts[5].replace("quantity", "");
+            String name = parts[3];
+            String description = parts[4];
+            String price = parts[5];
+            String quantity = parts[6];
             String json = String.format(
-                    "{\"command\":\"%s\",\"id\":%s,\"productname\":\"%s\",\"price\":%s,\"quantity\":%s}",
-                    command, id, name, price, quantity
+                    "{\"command\":\"create\"," +
+                            "\"id\":%s," +
+                            "\"name\":\"%s\"," +
+                            "\"description\":\"%s\"," +
+                            "\"price\":%s," +
+                            "\"quantity\":%s}",
+                    id, name, description, price, quantity
+            );
+            sendPostRequest("/product", json);
+        } else if (command.equalsIgnoreCase("update")){
+            String id = parts[2];
+            String name = parts[3].replace("name:","");
+            String description = parts[4].replace("description:","");
+            String price = parts[5].replace("price:","");
+            String quantity = parts[6].replace("quantity", "");
+            String json = String.format(
+                    "{\"command\":\"update\"," +
+                            "\"id\":%s," +
+                            "\"name\":\"%s\"," +
+                            "\"description\":\"%s\"," +
+                            "\"price\":%s," +
+                            "\"quantity\":%s}",
+                    id, name, description, price, quantity
+            );
+            sendPostRequest("/product", json);
+        } else if (command.equalsIgnoreCase("delete")){
+            String id = parts[2];
+            String name = parts[3];
+            String price = parts[4];
+            String quantity = parts[5];
+            String json = String.format(
+                    "{\"command\":\"update\"," +
+                            "\"id\":%s," +
+                            "\"name\":\"%s\"," +
+                            "\"price\":%s," +
+                            "\"quantity\":%s}",
+                    id, name, price, quantity
             );
             sendPostRequest("/product", json);
         }
