@@ -37,7 +37,11 @@ public class WorkloadParser {
             if (line.isEmpty()) {
                 continue;
             }
-            String[] parts = line.split(" ");
+
+            if(line.startsWith("[")){
+                line = line.substring(line.indexOf("]")+1).trim();
+            }
+            String[] parts = line.split("\\s+"); // split by any whitespace
             String service = parts[0]; // USER, PRODUCT, or ORDER
             String command = parts[1]; // create get, update, delete or place order
 
@@ -68,16 +72,17 @@ public class WorkloadParser {
                 jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
                         command, parts[2], parts[3], parts[4], parts[5]);
             } else if (command.equals("update")) {
-                String id = parts[2];
-                String username = parts[3].replace("username:","");
-                String email = parts[4].replace("email:","");
-                String password = parts[5].replace("password:","");
-                jsonBody = String.format(
-                        "{\"command\":\"update\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
-                        id, username, email, password
-                );
+                StringBuilder json_builder = new StringBuilder(String.format("{\"command\":\"update\",\"id\":%s", parts[2]));
+                for(int i = 3; i< parts.length; i++){
+                    String[] key_val = parts[i].split(":");
+                    if(key_val.length == 2){
+                        json_builder.append(String.format(",\"%s\":\"%s\"", key_val[0], key_val[1]));
+                    }
+                }
+                json_builder.append("}");
+                sendPostRequest("/user", json_builder.toString());
             }
-            sendPostRequest("/user", jsonBody);
+
         }
     }
 
@@ -123,33 +128,23 @@ public class WorkloadParser {
             );
             sendPostRequest("/product", json);
         } else if (command.equalsIgnoreCase("update")) {
-            String id = parts[2];
-            String name = parts[3].replace("name:","");
-            String description = parts[4].replace("description:","");
-            String price = parts[5].replace("price:","");
-            String quantity = parts[6].replace("quantity", "");
-            String json = String.format(
-                    "{\"command\":\"update\"," +
-                            "\"id\":%s," +
-                            "\"name\":\"%s\"," +
-                            "\"description\":\"%s\"," +
-                            "\"price\":%s," +
-                            "\"quantity\":%s}",
-                    id, name, description, price, quantity
-            );
-            sendPostRequest("/product", json);
+            StringBuilder json_builder = new StringBuilder(String.format("{\"command\":\"update\",\"id\":%s", parts[2]));
+            for(int i = 3; i < parts.length; i++){
+                String[] key_val = parts[i].split(":");
+                if(key_val.length == 2){
+                    if(key_val[0].equals("price")||key_val[0].equals("quantity")){
+                        json_builder.append(String.format(",\"%s\":%s", key_val[0], key_val[1]));
+                    }else{
+                        json_builder.append(String.format(",\"%s\":\"%s\"", key_val[0], key_val[1]));
+                    }
+                }
+            }
+            json_builder.append("}");
+            sendPostRequest("/product", json_builder.toString());
         } else if (command.equalsIgnoreCase("delete")) {
-            String id = parts[2];
-            String name = parts[3];
-            String price = parts[4];
-            String quantity = parts[5];
             String json = String.format(
-                    "{\"command\":\"update\"," +
-                            "\"id\":%s," +
-                            "\"name\":\"%s\"," +
-                            "\"price\":%s," +
-                            "\"quantity\":%s}",
-                    id, name, price, quantity
+                    "{\"command\":\"delete\",\"id\":%s,\"name\":\"%s\",\"price\":%s,\"quantity\":%s}",
+                    parts[2], parts[3], parts[4], parts[5]
             );
             sendPostRequest("/product", json);
         }
