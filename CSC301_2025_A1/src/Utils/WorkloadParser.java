@@ -31,6 +31,7 @@ public class WorkloadParser {
         String configPath = "config.json";
         int port = ConfigReader.getPort(configPath, "OrderService");
         String ip = ConfigReader.getIp(configPath, "OrderService");
+        ip = ip.replace("\"","").trim();
         orderUrl = "http://" + ip + ":" + port;
         while (sc.hasNextLine()) {
             String line = sc.nextLine().trim();
