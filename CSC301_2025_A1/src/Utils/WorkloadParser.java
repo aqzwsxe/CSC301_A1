@@ -65,6 +65,7 @@ public class WorkloadParser {
     * */
     public static void handleUser(String command, String[] parts) throws IOException, URISyntaxException, InterruptedException {
         //build JSON and send to Order Service
+        System.out.println("The handleUser method is called inside the parser");
         if (command.equals("get")) {
             sendGetRequest("/user/"+parts[2]);
         } else {
