@@ -10,6 +10,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 
 public class OrderHandler implements HttpHandler {
     private final String iscsUrl;
@@ -27,30 +28,104 @@ public class OrderHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
-        String path = exchange.getRequestURI().getPath();
-        URI targetUri = URI.create(iscsUrl + path);
-
-        System.out.println("[Order] Forwarding to ISCS...");
-        System.out.println("The targetUri: " + targetUri);
-
+        byte[] requestBody = exchange.getRequestBody().readAllBytes();
+        String bodyString = new String(requestBody, StandardCharsets.UTF_8);
         try {
-            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(targetUri);
-            if(method.equalsIgnoreCase("POST")){
-                byte[] body = exchange.getRequestBody().readAllBytes();
-                requestBuilder.POST(HttpRequest.BodyPublishers.ofByteArray(body));
+            if(method.equalsIgnoreCase("POST") && bodyString.contains("place order")){
+                handlePlaceOrder(exchange, bodyString);
             }else{
-                requestBuilder.GET();
+                String path = exchange.getRequestURI().getPath();
+                HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(iscsUrl + path));
+                if(method.equalsIgnoreCase("POST")){
+                    builder.POST(HttpRequest.BodyPublishers.ofByteArray(requestBody));
+                }
+                else{
+                    builder.GET();
+                }
+                HttpResponse<byte[]> res = null;
+                res = client.send(builder.build(), HttpResponse.BodyHandlers.ofByteArray());
+                sendResponse(exchange,res.statusCode(),res.body());
             }
-            HttpRequest request = requestBuilder.build();
-            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            sendResponse(exchange, response.statusCode(), response.body());
-
-        } catch (InterruptedException e) {
-            byte[] error = "Error connecting to ISCS".getBytes();
-            sendResponse(exchange, 502, error);
-            throw new RuntimeException(e);
+        }catch (Exception e){
+            try {
+                sendError(exchange, 400, "Invalid Request");
+            }catch (Exception e1){}
 
         }
+    }
+
+    private  void  handlePlaceOrder(HttpExchange exchange, String body) throws IOException, InterruptedException {
+        try {
+            String userId = getJsonValue(body, "user_id");
+            String productId = getJsonValue(body, "product_id");
+            String quantityStr = getJsonValue(body, "quantity");
+
+            if(userId==null || productId == null || quantityStr == null){
+                sendError(exchange,400, "Invalid Request");
+                return;
+            }
+
+            int quantity = Integer.parseInt(quantityStr);
+            if(quantity <= 0){
+                sendError(exchange, 400, "Invalid Request");
+                return;
+            }
+
+            HttpResponse<String> userRes = client.send(HttpRequest.newBuilder().uri(URI.create(iscsUrl + "/user/" + userId)).GET().build(),
+                    HttpResponse.BodyHandlers.ofString());
+
+            if(userRes.statusCode() == 404){
+                sendError(exchange, 404, "Invalid Request");
+                return;
+            }
+
+            HttpResponse<String> prodRes = client.send(
+                    HttpRequest.newBuilder().uri(URI.create(iscsUrl + "/product/" + productId)).GET().build(),
+                    HttpResponse.BodyHandlers.ofString()
+            );
+
+            if(prodRes.statusCode() == 404){
+                sendError(exchange, 404, "Invalid Request");
+                return;
+            }
+            int availableQuantity = Integer.parseInt(getJsonValue(prodRes.body(), "quantity"));
+            if(quantity > availableQuantity){
+                sendError(exchange, 400, "Exceeded quantity limit");
+                return;
+            }
+
+            int newStock = availableQuantity-quantity;
+            String updateBody = String.format(
+                    "{\"command\": " +
+                            "\"update\", " +
+                            "\"id\": %s, " +
+                            "\"quantity\": %d}",
+                    productId, newStock
+            );
+
+
+            String successJson = String.format(
+                    "{\n" +
+                            "        \"product_id\": %s,\n" +
+                            "        \"user_id\": %s,\n" +
+                            "        \"quantity\": %d,\n" +
+                            "        \"status\": \"Success\"\n" +
+                            "    }",
+                    productId, userId, quantity);
+            client.send(
+                    HttpRequest.newBuilder()
+                            .uri(URI.create(iscsUrl + "/product"))
+                            .POST(HttpRequest.BodyPublishers.ofString(updateBody))
+                            .build(),
+                    HttpResponse.BodyHandlers.ofByteArray()
+            );
+
+            sendResponse(exchange, 200, successJson.getBytes());
+        }catch (Exception e){
+            sendError(exchange, 500, "Internal Server Error");
+        }
+
+
     }
 
     private void sendResponse(HttpExchange exchange, int statusCode, byte[] response) throws IOException {
@@ -61,6 +136,32 @@ public class OrderHandler implements HttpHandler {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void sendError(HttpExchange exchange, int code, String message) throws IOException {
+        String json = String.format("{\"status\": \"%s\"}\n", message);
+        sendResponse(exchange, code, json.getBytes());
+    }
+
+    private String getJsonValue(String json, String key){
+        String pattern = "\"" + key + "\":";
+        int start = json.indexOf(pattern);
+        if(start==-1){
+            return null;
+        }
+
+        start += pattern.length();
+        int end = json.indexOf(",", start);
+        if(end == -1){
+            end = json.indexOf("}", start);
+        }
+
+        String value = json.substring(start,end).trim();
+
+        if(value.startsWith("\"")){
+            value = value.substring(1,value.length()-1);
+        }
+        return value;
     }
 
 
