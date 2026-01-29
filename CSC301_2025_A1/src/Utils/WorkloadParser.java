@@ -67,6 +67,7 @@ public class WorkloadParser {
     public static void handleUser(String command, String[] parts) throws IOException, URISyntaxException, InterruptedException {
         //build JSON and send to Order Service
 //        System.out.println("The handleUser method is called inside the parser");
+        System.out.println("/user/"+parts[2]);
         if (command.equals("get")) {
             sendGetRequest("/user/"+parts[2]);
         } else {
@@ -74,19 +75,20 @@ public class WorkloadParser {
             if (command.equals("create")) {
                 // A valid create user process need
                 if(parts.length!=6){
+                    System.out.println("The length of the creat user command is less than 6");
                     jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
-                            command, null, null, null, null);
+                            command, "invalid-info", "invalid-info", "invalid-info", "invalid-info");
                 }
                 else{
                     jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
                             command, parts[2], parts[3], parts[4], parts[5]);
                 }
-
+                System.out.println("Running the sendRequest");
                 sendPostRequest("/user", jsonBody);
             }else if (command.equals("delete")){
                     if(parts.length != 6){
                         jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
-                                command, null, null, null, null);
+                                command, "invalid-info", "invalid-info", "invalid-info", "invalid-info");
                     }
                     else{
                         jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
@@ -125,7 +127,7 @@ public class WorkloadParser {
         if(parts.length != 5){
             String jsonBody = String.format(
                     "{\"command\":\"place order\",\"user_id\":%s,\"product_id\":%s,\"quantity\":%s}",
-                    null, null, null);
+                    "invalid-info", "invalid-info", "invalid-info");
             sendPostRequest("/order", jsonBody);
             return;
         }
@@ -153,7 +155,7 @@ public class WorkloadParser {
                                 "\"description\":\"%s\"," +
                                 "\"price\":%s," +
                                 "\"quantity\":%s}",
-                        null, null, null, null, null
+                        "invalid-info", "invalid-info", "invalid-info", "invalid-info", "invalid-info"
                 );
                 sendPostRequest("/product", json1);
                 return;
@@ -193,7 +195,7 @@ public class WorkloadParser {
             if(parts.length != 6){
                 String json1 = String.format(
                         "{\"command\":\"delete\",\"id\":%s,\"name\":\"%s\",\"price\":%s,\"quantity\":%s}",
-                        null, null, null, null
+                        "invalid-info", "invalid-info", "invalid-info", "invalid-info"
                 );
                 return;
             }
@@ -243,20 +245,23 @@ public class WorkloadParser {
     * */
     public static void sendPostRequest(String endpoint, String jsonBody){
         try {
+            System.out.println("run the sendPostRequest");
             String fullUrl = (orderUrl + endpoint).replaceAll("\\s", "");
 
             HttpRequest request  = HttpRequest.newBuilder()
                     .uri(URI.create(fullUrl))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
-
+            System.out.println("After the HTTPRequest");
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println(response.statusCode());
             System.out.println("POST " + endpoint + " | Status: " + response.statusCode());
+            System.out.println("Before the if statement");
             if(response.statusCode() != 200){
                 System.out.println("Response Body: " + response.body());
             }
         } catch (Exception e) {
-
+            System.out.println("Encounter an exception: " + e.getMessage());
         }
     }
 }

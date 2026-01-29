@@ -198,7 +198,11 @@ public class ProductHandler implements HttpHandler {
             sendResponse(exchange,409,errorResponse);
             return;
         }
-
+        // if the json is an invalid json, some of the necessary parts are missing
+        if(getJsonValue(body, "name").equals("invalid-info")){
+            sendResponse(exchange,400, errorResponse);
+            return;
+        }
         if (inputContentCheck(body)) {
             String name = getJsonValue(body, "name");
             String description = getJsonValue(body, "description");
@@ -245,7 +249,11 @@ public class ProductHandler implements HttpHandler {
             sendResponse(exchange, 404, errorResponse);
             return;
         }
-
+        // check if this is an invalid json file
+        if(getJsonValue(body, "name").equals("invalid-info")){
+            sendResponse(exchange, 400, errorResponse);
+            return;
+        }
         if (inputContentCheck(body)) {
             String name = getJsonValue(body, "name");
             String description = getJsonValue(body, "description");

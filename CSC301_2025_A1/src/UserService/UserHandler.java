@@ -113,7 +113,7 @@ public class UserHandler implements HttpHandler {
         String command = getJsonValue(body, "command");
         String idStr = getJsonValue(body, "id");
 
-        if(command==null || idStr == null){
+        if(command==null || idStr == null || idStr.equals("invalid-info")){
             sendResponse(exchange, 400, "{}");
             return;
         }
@@ -162,6 +162,7 @@ public class UserHandler implements HttpHandler {
 
     private void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
         // Add new line character, so the terminal prompt will start a new line
+        System.out.println("The user send the request back to ISCS");
         String response1 = response + "\n";
         byte[] bytes = response1.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type","application/json");
@@ -173,7 +174,9 @@ public class UserHandler implements HttpHandler {
 
 
     public  void  handleCreate(HttpExchange exchange, int id, String body) throws IOException, NoSuchAlgorithmException {
+        System.out.println("Start the handle create method");
         if(UserService.userDatabase.containsKey(id)){
+            System.out.println("User already exist");
             sendResponse(exchange,409,"{}");
             return;
         }
@@ -184,10 +187,12 @@ public class UserHandler implements HttpHandler {
         if(username==null || username.isEmpty()||
                 email==null || email.isEmpty()||
                 password==null||password.isEmpty()){
+            System.out.println("sth is null");
             sendResponse(exchange,400, "{}");
             return;
         }
         if (!checkEmail(email)){
+            System.out.println("The email is invalid");
             sendResponse(exchange,400, "{}");
             return;
         }
@@ -203,6 +208,7 @@ public class UserHandler implements HttpHandler {
                 "        \"email\": \"%s\",\n" +
                 "        \"password\": \"%s\"\n" +
                 "    }", id, username, email, hashed_password);
+        System.out.println("successfully create the user");
         sendResponse(exchange, 200, res1);
         return;
 
@@ -265,7 +271,7 @@ public class UserHandler implements HttpHandler {
         String reqEmail = getJsonValue(body, "email");
         String reqPassword = getJsonValue(body, "password");
 
-        if(reqUser == null || reqEmail == null || reqPassword == null){
+        if(reqUser == null || reqEmail == null || reqPassword == null || reqUser.equals("invalid-info") || reqEmail.equals("invalid-info") || reqPassword.equals("invalid-info")){
             sendResponse(exchange, 400, "{}");
             return;
         }

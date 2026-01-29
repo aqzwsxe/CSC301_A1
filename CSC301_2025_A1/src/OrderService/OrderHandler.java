@@ -59,7 +59,8 @@ public class OrderHandler implements HttpHandler {
             String productId = getJsonValue(body, "product_id");
             String quantityStr = getJsonValue(body, "quantity");
 
-            if(userId==null || productId == null || quantityStr == null){
+            if(userId==null || productId == null || quantityStr == null ||
+                    userId.equals("invalid-info") || productId.equals("invalid-info") || quantityStr.equals("invalid-info")){
                 sendError(exchange,400, "Invalid Request");
                 return;
             }
@@ -139,8 +140,10 @@ public class OrderHandler implements HttpHandler {
         }else{
             builder.GET();
         }
+        System.out.println("Forward the information to the ISCS");
         HttpResponse<byte[]> res = client.send(builder.build(), HttpResponse.BodyHandlers.ofByteArray());
         sendResponse(exchange, res.statusCode(), res.body());
+        System.out.println("Receive the response from the ISCS");
     }
 
     private void sendResponse(HttpExchange exchange, int statusCode, byte[] response) throws IOException {
