@@ -291,14 +291,17 @@ public class ProductHandler implements HttpHandler {
         if (inputContentCheck(body, false)) {
             String name = getJsonValue(body, "name");
 //          String description = getJsonValue(body, "description");
+        if (inputContentCheck(body, false)) {
+            String name = getJsonValue(body, "name");
+//            String description = getJsonValue(body, "description");
             float price = Float.parseFloat(getJsonValue(body, "price"));
             int quantity = Integer.parseInt(getJsonValue(body, "quantity"));
 
-            if (product.getName().equals(name) && product.getDescription().equals(description) &&
-                    product.getPrice() == price && product.getQuantity() == quantity) {
+            if (product.getName().equals(name)  && product.getPrice() == price &&
+                    product.getQuantity() == quantity) { // && product.getDescription().equals(description)
                 ProductService.productDatabase.remove(id);
             }
-            sendResponse(exchange, 200, "{}");
+            sendResponse(exchange, 200, "{}\n");
         } else {
             sendResponse(exchange,400, errorResponse);
         }
