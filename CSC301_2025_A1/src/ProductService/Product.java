@@ -52,7 +52,7 @@ public class Product {
     }
 
     public String toJson(){
-        return String.format("{\"id\": %d, \"productname\": \"%s\", \"description\": \"%s\", \"price\": \"%f\", \"quantity\": \"%d\"}",
+        return String.format("{\"id\": %d, \"name\": \"%s\", \"description\": \"%s\", \"price\": \"%f\", \"quantity\": \"%d\"}",
                 this.pid, this.name, this.description, this.price, this.quantity_in_stock);
     }
 }

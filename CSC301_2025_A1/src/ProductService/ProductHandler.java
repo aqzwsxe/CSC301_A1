@@ -138,7 +138,7 @@ public class ProductHandler implements HttpHandler {
 
     private Boolean inputContentCheck(String body){
         // Name issues:
-        String name = getJsonValue(body, "productname");
+        String name = getJsonValue(body, "name");
         if (name == null) {
             return false;
         } else {
@@ -200,7 +200,7 @@ public class ProductHandler implements HttpHandler {
         }
 
         if (inputContentCheck(body)) {
-            String name = getJsonValue(body, "productname");
+            String name = getJsonValue(body, "name");
             String description = getJsonValue(body, "description");
             float price = Float.parseFloat(getJsonValue(body, "price"));
             int quantity = Integer.parseInt(getJsonValue(body, "quantity"));
@@ -222,7 +222,7 @@ public class ProductHandler implements HttpHandler {
         }
 
         if (inputContentCheck(body)) {
-            String name = getJsonValue(body, "productname");
+            String name = getJsonValue(body, "name");
             String description = getJsonValue(body, "description");
             float price = Float.parseFloat(getJsonValue(body, "price"));
             int quantity = Integer.parseInt(getJsonValue(body, "quantity"));
@@ -247,7 +247,7 @@ public class ProductHandler implements HttpHandler {
         }
 
         if (inputContentCheck(body)) {
-            String name = getJsonValue(body, "productname");
+            String name = getJsonValue(body, "name");
             String description = getJsonValue(body, "description");
             float price = Float.parseFloat(getJsonValue(body, "price"));
             int quantity = Integer.parseInt(getJsonValue(body, "quantity"));
