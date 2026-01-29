@@ -5,6 +5,7 @@ import javax.net.ssl.SSLParameters;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -70,11 +71,30 @@ public class WorkloadParser {
             sendGetRequest("/user/"+parts[2]);
         } else {
             String jsonBody = "";
-            if (command.equals("create")||command.equals("delete")) {
-                jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
-                        command, parts[2], parts[3], parts[4], parts[5]);
+            if (command.equals("create")) {
+                // A valid create user process need
+                if(parts.length!=6){
+                    jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
+                            command, null, null, null, null);
+                }
+                else{
+                    jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
+                            command, parts[2], parts[3], parts[4], parts[5]);
+                }
+
                 sendPostRequest("/user", jsonBody);
-            } else if (command.equals("update")) {
+            }else if (command.equals("delete")){
+                    if(parts.length != 6){
+                        jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
+                                command, null, null, null, null);
+                    }
+                    else{
+                        jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
+                                command, parts[2], parts[3], parts[4], parts[5]);
+                    }
+                sendPostRequest("/user", jsonBody);
+            }
+            else if (command.equals("update")) {
                 StringBuilder json_builder = new StringBuilder(String.format("{\"command\":\"update\",\"id\":%s", parts[2]));
                 for(int i = 3; i< parts.length; i++){
                     String[] key_val = parts[i].split(":");
@@ -100,6 +120,15 @@ public class WorkloadParser {
 //                    parts[3], parts[4], parts[5]);
 //            sendPostRequest("/order", jsonBody);
 //        }
+        // When any of the fields are mssing, return an invalid json body
+        // Avoid the index out of bound
+        if(parts.length != 5){
+            String jsonBody = String.format(
+                    "{\"command\":\"place order\",\"user_id\":%s,\"product_id\":%s,\"quantity\":%s}",
+                    null, null, null);
+            sendPostRequest("/order", jsonBody);
+            return;
+        }
         if (parts[1].equals("place")) { // I don't think there is a get for ORDER check WorkLoadTemplate.txt
             String jsonBody = String.format(
                     "{\"command\":\"place order\",\"user_id\":%s,\"product_id\":%s,\"quantity\":%s}",
@@ -115,6 +144,22 @@ public class WorkloadParser {
         if (command.equalsIgnoreCase("info")) {
             sendGetRequest("/product/" + parts[2]);
         } else if (command.equalsIgnoreCase("create")) {
+            // Hanlde the case that some fields are missing when create new product
+            if(parts.length!=7){
+                String json1 = String.format(
+                        "{\"command\":\"create\"," +
+                                "\"id\":%s," +
+                                "\"name\":\"%s\"," +
+                                "\"description\":\"%s\"," +
+                                "\"price\":%s," +
+                                "\"quantity\":%s}",
+                        null, null, null, null, null
+                );
+                sendPostRequest("/product", json1);
+                return;
+            }
+
+
             String id = parts[2];
             String name = parts[3];
             String description = parts[4];
@@ -145,6 +190,13 @@ public class WorkloadParser {
             json_builder.append("}");
             sendPostRequest("/product", json_builder.toString());
         } else if (command.equalsIgnoreCase("delete")) {
+            if(parts.length != 6){
+                String json1 = String.format(
+                        "{\"command\":\"delete\",\"id\":%s,\"name\":\"%s\",\"price\":%s,\"quantity\":%s}",
+                        null, null, null, null
+                );
+                return;
+            }
             String json = String.format(
                     "{\"command\":\"delete\",\"id\":%s,\"name\":\"%s\",\"price\":%s,\"quantity\":%s}",
                     parts[2], parts[3], parts[4], parts[5]
@@ -184,6 +236,7 @@ public class WorkloadParser {
             System.err.println("Error sending GET request: "+ e.getMessage());
         }
     }
+
 
     /*
     * Specify the orderUrl. The request will be sent to the orderService
