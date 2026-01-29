@@ -67,7 +67,6 @@ public class WorkloadParser {
     public static void handleUser(String command, String[] parts) throws IOException, URISyntaxException, InterruptedException {
         //build JSON and send to Order Service
 //        System.out.println("The handleUser method is called inside the parser");
-        System.out.println("/user/"+parts[2]);
         if (command.equals("get")) {
             sendGetRequest("/user/"+parts[2]);
         } else {
@@ -97,15 +96,25 @@ public class WorkloadParser {
                 sendPostRequest("/user", jsonBody);
             }
             else if (command.equals("update")) {
-                StringBuilder json_builder = new StringBuilder(String.format("{\"command\":\"update\",\"id\":%s", parts[2]));
-                for(int i = 3; i< parts.length; i++){
-                    String[] key_val = parts[i].split(":");
-                    if(key_val.length == 2){
-                        json_builder.append(String.format(",\"%s\":\"%s\"", key_val[0], key_val[1]));
+                try {
+                    // If the id is invalid, return 400
+                    Integer.parseInt(parts[2]);
+                    StringBuilder json_builder = new StringBuilder(String.format("{\"command\":\"update\",\"id\":%s", parts[2]));
+                    for(int i = 3; i< parts.length; i++){
+                        String[] key_val = parts[i].split(":");
+                        if(key_val.length == 2){
+                            json_builder.append(String.format(",\"%s\":\"%s\"", key_val[0], key_val[1]));
+                        }
                     }
+                    json_builder.append("}");
+                    sendPostRequest("/user", json_builder.toString());
+                } catch (NumberFormatException e) {
+                    // If the ID does not exist or invalid, return
+                    StringBuilder json_builder = new StringBuilder(String.format("{\"command\":\"update\",\"id\":%s", "invalid-info"));
+                    json_builder.append("}");
+                    sendPostRequest("/user", json_builder.toString());
                 }
-                json_builder.append("}");
-                sendPostRequest("/user", json_builder.toString());
+
             }
 
         }

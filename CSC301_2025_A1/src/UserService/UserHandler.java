@@ -112,7 +112,7 @@ public class UserHandler implements HttpHandler {
 
         String command = getJsonValue(body, "command");
         String idStr = getJsonValue(body, "id");
-
+        // this part handles create and delete and update
         if(command==null || idStr == null || idStr.equals("invalid-info")){
             sendResponse(exchange, 400, "{}");
             return;
