@@ -11,10 +11,14 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class OrderHandler implements HttpHandler {
     private final String iscsUrl;
     private final HttpClient client;
+
+
 
     public OrderHandler(String configFile) throws IOException {
         String rawIp = ConfigReader.getIp(configFile, "InterServiceCommunication");
@@ -30,21 +34,16 @@ public class OrderHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         byte[] requestBody = exchange.getRequestBody().readAllBytes();
         String bodyString = new String(requestBody, StandardCharsets.UTF_8);
+        String path = exchange.getRequestURI().getPath();
+        System.out.println("The Order handle method: " );
+        System.out.println("method "+ method);
+        System.out.println("The bodyString: "+ bodyString);
         try {
-            if(method.equalsIgnoreCase("POST") && bodyString.contains("place order")){
+            // Check if it's a request to Place an order
+            if(method.equalsIgnoreCase("POST") && path.startsWith("/order")  && bodyString.contains("place order")){
                 handlePlaceOrder(exchange, bodyString);
             }else{
-                String path = exchange.getRequestURI().getPath();
-                HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(iscsUrl + path));
-                if(method.equalsIgnoreCase("POST")){
-                    builder.POST(HttpRequest.BodyPublishers.ofByteArray(requestBody));
-                }
-                else{
-                    builder.GET();
-                }
-                HttpResponse<byte[]> res = null;
-                res = client.send(builder.build(), HttpResponse.BodyHandlers.ofByteArray());
-                sendResponse(exchange,res.statusCode(),res.body());
+                forwardToISCS(exchange,method,path,requestBody);
             }
         }catch (Exception e){
             try {
@@ -121,11 +120,27 @@ public class OrderHandler implements HttpHandler {
             );
 
             sendResponse(exchange, 200, successJson.getBytes());
+            Integer.parseInt(productId);
+            Order newOrder = new Order(Integer.parseInt(productId), Integer.parseInt(userId), quantity, "Success");
+            OrderService.orderDatabase.put(newOrder.getId(), newOrder);
         }catch (Exception e){
             sendError(exchange, 500, "Internal Server Error");
         }
 
 
+    }
+
+
+    private void forwardToISCS(HttpExchange exchange, String method, String path, byte[] requestBody) throws IOException, InterruptedException {
+        HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(iscsUrl+path));
+        if(method.equalsIgnoreCase("POST")){
+            builder.header("Content-Type", "application/json");
+            builder.POST(HttpRequest.BodyPublishers.ofByteArray(requestBody));
+        }else{
+            builder.GET();
+        }
+        HttpResponse<byte[]> res = client.send(builder.build(), HttpResponse.BodyHandlers.ofByteArray());
+        sendResponse(exchange, res.statusCode(), res.body());
     }
 
     private void sendResponse(HttpExchange exchange, int statusCode, byte[] response) throws IOException {
