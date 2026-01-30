@@ -57,6 +57,7 @@ public class OrderHandler implements HttpHandler {
         try {
             String userId = getJsonValue(body, "user_id");
             String productId = getJsonValue(body, "product_id");
+            // the quantity the order want
             String quantityStr = getJsonValue(body, "quantity");
 
             if(userId==null || productId == null || quantityStr == null ||
@@ -116,13 +117,13 @@ public class OrderHandler implements HttpHandler {
             client.send(
                     HttpRequest.newBuilder()
                             .uri(URI.create(iscsUrl + "/product"))
+                            .header("Content-Type", "application/json")
                             .POST(HttpRequest.BodyPublishers.ofString(updateBody))
                             .build(),
                     HttpResponse.BodyHandlers.ofByteArray()
             );
 
             sendResponse(exchange, 200, successJson.getBytes());
-            Integer.parseInt(productId);
             Order newOrder = new Order(Integer.parseInt(productId), Integer.parseInt(userId), quantity, "Success");
             OrderService.orderDatabase.put(newOrder.getId(), newOrder);
         }catch (Exception e){

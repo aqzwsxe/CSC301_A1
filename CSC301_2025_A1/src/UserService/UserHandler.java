@@ -184,6 +184,7 @@ public class UserHandler implements HttpHandler {
         String username = getJsonValue(body, "username");
         if(username.isEmpty()){
             sendResponse(exchange,400,"{}");
+            return;
         }
         String email = getJsonValue(body, "email");
         String password = getJsonValue(body, "password");
