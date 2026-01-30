@@ -108,7 +108,7 @@ public class UserHandler implements HttpHandler {
     private void handlePost(HttpExchange exchange) throws IOException, NoSuchAlgorithmException {
         InputStream is = exchange.getRequestBody();
         String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-        System.out.println("inside the handlePost: "+body);
+//        System.out.println("inside the handlePost: "+body);
 
         String command = getJsonValue(body, "command");
         String idStr = getJsonValue(body, "id");
@@ -184,6 +184,7 @@ public class UserHandler implements HttpHandler {
         String username = getJsonValue(body, "username");
         if(username.isEmpty()){
             sendResponse(exchange,400,"{}");
+            return;
         }
         String email = getJsonValue(body, "email");
         String password = getJsonValue(body, "password");

@@ -74,7 +74,7 @@ public class WorkloadParser {
             if (command.equals("create")) {
                 // A valid create user process need
                 if(parts.length!=6){
-                    System.out.println("The length of the creat user command is less than 6");
+//                    System.out.println("The length of the creat user command is less than 6");
                     jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
                             command, "invalid-info", "invalid-info", "invalid-info", "invalid-info");
                 }
@@ -121,21 +121,53 @@ public class WorkloadParser {
     }
 
     public static void handleOrder(String[] parts) throws IOException, URISyntaxException, InterruptedException {
-        if(parts.length != 5){
-            String jsonBody = String.format(
-                    "{\"command\":\"place order\",\"user_id\":%s,\"product_id\":%s,\"quantity\":%s}",
-                    "invalid-info", "invalid-info", "invalid-info");
+        if (parts.length < 3) {
+            String jsonBody = "{\"command\":\"invalid-order\"}";
             sendPostRequest("/order", jsonBody);
             return;
         }
-        if (parts[1].equals("place")) { // I don't think there is a get for ORDER check WorkLoadTemplate.txt
-            String jsonBody = String.format(
-                    "{\"command\":\"place order\",\"user_id\":%s,\"product_id\":%s,\"quantity\":%s}",
-                    parts[3], parts[2], parts[4]);
-            sendPostRequest("/order", jsonBody);
+        String action = parts[1].toLowerCase();
+        switch (action){
+            case "place":
+                if(parts.length != 5){
+                    String jsonBody = String.format(
+                            "{\"command\":\"place order\",\"user_id\":%s,\"product_id\":%s,\"quantity\":%s}",
+                            "invalid-info", "invalid-info", "invalid-info");
+                    sendPostRequest("/order", jsonBody);
+                    return;
+                }
+                else{
+                    String jsonBody = String.format(
+                            "{\"command\":\"place order\",\"user_id\":%s,\"product_id\":%s,\"quantity\":%s}",
+                            parts[3], parts[2], parts[4]);
+                    sendPostRequest("/order", jsonBody);
+                }
+                break;
+            case "info":
+                sendGetRequest("/order/" + parts[2]);
+                break;
+            case "cancel":
+                sendDeleteRequest("/order/" + parts[2]);
+                break;
+            default:
+                System.out.println("Invalid order action");
+                return;
         }
+
     }
 
+    public static void sendDeleteRequest(String endpoint){
+        try {
+            String fullUrl = (orderUrl + endpoint).replaceAll("\\s", "");
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(fullUrl))
+                    .DELETE().build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println("DELETE " + endpoint + " | Status: " + response.statusCode());
+            System.out.println("Data: " + response.body());
+        }catch (Exception e){
+            System.out.println("Error when deleting an Order");
+        }
+    }
     /*
     * Build the jsonBody that will be sent to the OrderService. Eventually, the jsonBody will be sent to product service
     * */

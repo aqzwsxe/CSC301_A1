@@ -300,6 +300,7 @@ public class ProductHandler implements HttpHandler {
                 product.setName(name);
             } else {
                 sendResponse(exchange, 400, errorResponse);
+                return;
             }
         }
         if (description != null) {
@@ -307,6 +308,7 @@ public class ProductHandler implements HttpHandler {
                 product.setDescription(description);
             } else {
                 sendResponse(exchange, 400, errorResponse);
+                return;
             }
         }
         if (priceStr != null) {
@@ -314,28 +316,31 @@ public class ProductHandler implements HttpHandler {
                 float price = Float.parseFloat(priceStr);
                 if (price < 0) {
                     sendResponse(exchange, 400, errorResponse);
+                    return;
                 } else {
                     product.setPrice(price);
                 }
             } catch (Exception e) {
                 sendResponse(exchange, 400, errorResponse);
+                return;
             }
         }
-        if (quantityStr == null){
-            sendResponse(exchange, 400, errorResponse);
-        } else {
+        if(quantityStr != null){
             try {
                 int quantity = Integer.parseInt(quantityStr);
-                if (quantity < 0) {
-                    sendResponse(exchange, 400, errorResponse);
-                } else {
+                if(quantity >= 0){
                     product.setQuantity(quantity);
+                }else{
+                    sendResponse(exchange, 400, errorResponse);
+                    return;
                 }
-            } catch (Exception e) {
+            }catch (Exception e){
                 sendResponse(exchange, 400, errorResponse);
+                return;
             }
         }
         sendResponse(exchange, 200, product.toJson());
+        return;
     }
 
     /**
