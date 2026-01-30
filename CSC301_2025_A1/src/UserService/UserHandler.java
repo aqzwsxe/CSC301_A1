@@ -14,6 +14,14 @@ import java.util.HashMap;
 
 public class UserHandler implements HttpHandler {
 
+    /**
+     * Routes requests based on HTTP method.
+     *
+     * <p><b>Assumptions:</b> Only GET and POST are supported. Other methods are ignored
+     * unless handled elsewhere.</p>
+     *
+     * @param exchange the HTTP exchange; must be non-null
+     */
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
@@ -32,6 +40,12 @@ public class UserHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Hash the input string using SHA256
+     *
+     * @param password1 the hashing string
+     * @return the hashed string
+     */
     private String hash_helper(String password1) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA256");
         byte[] hashBytes = md.digest(password1.getBytes(StandardCharsets.UTF_8));
@@ -46,9 +60,12 @@ public class UserHandler implements HttpHandler {
         return hexString.toString().toUpperCase();
     }
 
-    /*
-    * Check if an email is valid; Every email should have exact 1 "@" sign
-    * */
+    /**
+     * Check if an email is valid, an valid email must have exactly one @
+     *
+     * @param str1 the email address
+     * @return a Boolean of whether the email address contain exactly one @
+     */
     private boolean checkEmail(String str1){
         int counter = 0 ;
         char target = '@';
@@ -61,6 +78,20 @@ public class UserHandler implements HttpHandler {
         return counter==1;
     }
 
+    /**
+     * Handles a GET request to fetch a product by id from the request path.
+     *
+     * <p><b>Responses:</b>
+     * <ul>
+     *   <li>{@code 200}: user exists; response body is {@code user.toJson()}</li>
+     *   <li>{@code 400}: malformed path or non-integer id; response body is {@code {}}</li>
+     *   <li>{@code 404}: no product with the given id; response body is {@code {}}</li>
+     * </ul>
+     *
+     * @param exchange the HTTP exchange used to read and write the response; must be non-null
+     * @param path the request URI path; must be non-null
+     * @throws IOException if an I/O error occurs while sending the response
+     */
     private void handleGet(HttpExchange exchange, String path) throws IOException {
         String[] parts = path.split("/");
         if(parts.length < 3){
@@ -105,6 +136,12 @@ public class UserHandler implements HttpHandler {
     // handle both Get requests and the Post requests
 
 
+    /**
+     * Handles a POST request to and redirects to handler based on the command.
+     *
+     * @param exchange the HTTP exchange used to read and write the response; must be non-null
+     * @throws IOException if an I/O error occurs while sending the response
+     */
     private void handlePost(HttpExchange exchange) throws IOException, NoSuchAlgorithmException {
         InputStream is = exchange.getRequestBody();
         String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
@@ -139,7 +176,13 @@ public class UserHandler implements HttpHandler {
 
     }
 
-
+    /**
+     * Gets the value from the JSON string with corresponding key.
+     *
+     * @param json a JSON string
+     * @param key the key of the value searching for
+     * @return the value found or null if key not found
+     */
     private String getJsonValue(String json, String key){
         String pattern = "\"" + key + "\":";
         int start = json.indexOf(pattern);
@@ -160,6 +203,16 @@ public class UserHandler implements HttpHandler {
 
     }
 
+    /**
+     * Sends an HTTP response with a JSON body.
+     *
+     * <p><b>Assumptions:</b> {@code response} is a valid JSON string and {@code exchange} is open.</p>
+     *
+     * @param exchange the HTTP exchange used to send the response; must be non-null
+     * @param statusCode the HTTP status code to send
+     * @param response the response body to send; must be non-null
+     * @throws IOException if an I/O error occurs while sending headers or writing the body
+     */
     private void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
         // Add new line character, so the terminal prompt will start a new line
 //        System.out.println("The user send the request back to ISCS");
@@ -172,7 +225,21 @@ public class UserHandler implements HttpHandler {
         }
     }
 
-
+    /**
+     * Handles a create command. Create a new user in database if all fields are valid.
+     *
+     * <p><b>Responses:</b>
+     * <ul>
+     *   <li>{@code 200}: user creation success; response body is {@code user.toJson()}</li>
+     *   <li>{@code 400}: missing fields or invalid field type; response body is {@code {}}</li>
+     *   <li>{@code 409}: duplicate user id; response body is {@code {}}</li>
+     * </ul>
+     *
+     * @param exchange the HTTP exchange used to read and write the response; must be non-null
+     * @param id the product id of the product attempt to create
+     * @param body a JSON string containing the user id, username, email, password
+     * @throws IOException if an I/O error occurs while sending the response
+     */
     public  void  handleCreate(HttpExchange exchange, int id, String body) throws IOException, NoSuchAlgorithmException {
         System.out.println("Start the handle create method");
         if(UserService.userDatabase.containsKey(id)){
@@ -218,6 +285,21 @@ public class UserHandler implements HttpHandler {
 
     }
 
+    /**
+     * Handles a update command. Update an existing user in database if updating fields are valid.
+     *
+     * <p><b>Responses:</b>
+     * <ul>
+     *   <li>{@code 200}: product update success; response body is {@code product.toJson()}</li>
+     *   <li>{@code 400}: missing fields or invalid field type; response body is {@code {}}</li>
+     *   <li>{@code 404}: product id does not exist; response body is {@code {}}</li>
+     * </ul>
+     *
+     * @param exchange the HTTP exchange used to read and write the response; must be non-null
+     * @param id the product id of the product attempt to create
+     * @param body a JSON string containing the user id, username, email, password
+     * @throws IOException if an I/O error occurs while sending the response
+     */
     public  void handleUpdate(HttpExchange exchange, int id, String body) throws IOException, NoSuchAlgorithmException {
         User user = UserService.userDatabase.get(id);
         if(user==null){
@@ -262,6 +344,21 @@ public class UserHandler implements HttpHandler {
         return;
     }
 
+    /**
+     * Handles a delete command. Delete an existing user in database if all fields are valid.
+     *
+     * <p><b>Responses:</b>
+     * <ul>
+     *   <li>{@code 200}: product delete success; response body is {@code {}}</li>
+     *   <li>{@code 400}: missing fields or invalid field type; response body is {@code {}}</li>
+     *   <li>{@code 404}: product id does not exist; response body is {@code {}}</li>
+     * </ul>
+     *
+     * @param exchange the HTTP exchange used to read and write the response; must be non-null
+     * @param id the product id of the product attempt to create
+     * @param body a JSON string containing the user id, username, email, password
+     * @throws IOException if an I/O error occurs while sending the response
+     */
     public void handleDelete(HttpExchange exchange, int id, String body) throws IOException, NoSuchAlgorithmException {
         User user = UserService.userDatabase.get(id);
         if(user==null){

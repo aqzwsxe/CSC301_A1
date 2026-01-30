@@ -53,6 +53,21 @@ public class OrderHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Place an order based on user id and product id if corresponding product have sufficient quantity
+     * in stock
+     *
+     * <p><b>Responses:</b>
+     * <ul>
+     *   <li>{@code 200}: order place success; response body is {@code successJson.toJson()}</li>
+     *   <li>{@code 400}: missing fields or invalid field type/value; response body is {@code {}}</li>
+     *   <li>{@code 404}: invalid order request; response body is {@code {}}</li>
+     * </ul>
+     *
+     * @param exchange the HTTP exchange used to read and write the response; must be non-null
+     * @param body a JSON string containing the product id, user id, and quantity
+     * @throws IOException if an I/O error occurs while sending the response
+     */
     private  void  handlePlaceOrder(HttpExchange exchange, String body) throws IOException, InterruptedException {
         try {
             String userId = getJsonValue(body, "user_id");
@@ -147,6 +162,16 @@ public class OrderHandler implements HttpHandler {
         System.out.println("Receive the response from the ISCS");
     }
 
+    /**
+     * Sends an HTTP response with a JSON body.
+     *
+     * <p><b>Assumptions:</b> {@code response} is a valid JSON string and {@code exchange} is open.</p>
+     *
+     * @param exchange the HTTP exchange used to send the response; must be non-null
+     * @param statusCode the HTTP status code to send
+     * @param response the response body to send; must be non-null
+     * @throws IOException if an I/O error occurs while sending headers or writing the body
+     */
     private void sendResponse(HttpExchange exchange, int statusCode, byte[] response) throws IOException {
         exchange.getResponseHeaders().set("Content-Type", "application/json");
         exchange.sendResponseHeaders(statusCode, response.length);
@@ -157,11 +182,28 @@ public class OrderHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Sends an HTTP response with a error status code and error message.
+     *
+     * <p><b>Assumptions:</b> {@code response} is a valid JSON string and {@code exchange} is open.</p>
+     *
+     * @param exchange the HTTP exchange used to send the response; must be non-null
+     * @param code the HTTP error code
+     * @param message the error message
+     * @throws IOException if an I/O error occurs while sending headers or writing the body
+     */
     private void sendError(HttpExchange exchange, int code, String message) throws IOException {
         String json = String.format("{\"status\": \"%s\"}\n", message);
         sendResponse(exchange, code, json.getBytes());
     }
 
+    /**
+     * Gets the value from the JSON string with corresponding key.
+     *
+     * @param json a JSON string
+     * @param key the key of the value searching for
+     * @return the value found or null if key not found
+     */
     private String getJsonValue(String json, String key){
         String pattern = "\"" + key + "\":";
         int start = json.indexOf(pattern);

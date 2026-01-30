@@ -135,7 +135,13 @@ public class ProductHandler implements HttpHandler {
         }
     }
 
-
+    /**
+     * Gets the value from the JSON string with corresponding key.
+     *
+     * @param json a JSON string
+     * @param key the key of the value searching for
+     * @return the value found or null if key not found
+     */
     private String getJsonValue(String json, String key){
         String pattern = "\"" + key + "\":";
         int start = json.indexOf(pattern);
@@ -155,6 +161,16 @@ public class ProductHandler implements HttpHandler {
         return value;
     }
 
+    /**
+     * Sends an HTTP response with a JSON body.
+     *
+     * <p><b>Assumptions:</b> {@code response} is a valid JSON string and {@code exchange} is open.</p>
+     *
+     * @param exchange the HTTP exchange used to send the response; must be non-null
+     * @param statusCode the HTTP status code to send
+     * @param response the response body to send; must be non-null
+     * @throws IOException if an I/O error occurs while sending headers or writing the body
+     */
     private void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
         byte[] bytes = response.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type","application/json");
@@ -164,6 +180,13 @@ public class ProductHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Check if fields in the JSON string are non-empty and valid
+     *
+     * @param body a JSON string containing the product id, name, description, price, and quantity
+     * @param desc_matter a Boolean of whether description will be checked
+     * @return a Boolean of whether the JSON string is valid
+     */
     private Boolean inputContentCheck(String body, Boolean desc_matter){
         // Name issues:
         String name = getJsonValue(body, "name");
@@ -266,7 +289,7 @@ public class ProductHandler implements HttpHandler {
     }
 
     /**
-     * Handles a update command. Update a existing product in database if updating fields are valid.
+     * Handles a update command. Update an existing product in database if updating fields are valid.
      *
      * <p><b>Responses:</b>
      * <ul>
@@ -339,7 +362,7 @@ public class ProductHandler implements HttpHandler {
     }
 
     /**
-     * Handles a delete command. Delete a existing product in database if all fields are valid.
+     * Handles a delete command. Delete an existing product in database if all fields are valid.
      *
      * <p><b>Responses:</b>
      * <ul>
