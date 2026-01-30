@@ -121,18 +121,6 @@ public class WorkloadParser {
     }
 
     public static void handleOrder(String[] parts) throws IOException, URISyntaxException, InterruptedException {
-        //build JSON and send to Order Service
-        //ORDER place <product_id> <user_id> <quantity>
-//        if(parts[1].equals("get")){ // I don't think there is a get for ORDER check WorkLoadTemplate.txt
-//            sendGetRequest("/order/" + parts[2]);
-//        }else if(parts[1].equals("place") && parts[2].equals("order")){
-//            String jsonBody = String.format(
-//                    "{\"command\":\"place order\",\"user_id\":%s,\"product_id\":%s,\"quantity\":%s}",
-//                    parts[3], parts[4], parts[5]);
-//            sendPostRequest("/order", jsonBody);
-//        }
-        // When any of the fields are mssing, return an invalid json body
-        // Avoid the index out of bound
         if(parts.length != 5){
             String jsonBody = String.format(
                     "{\"command\":\"place order\",\"user_id\":%s,\"product_id\":%s,\"quantity\":%s}",

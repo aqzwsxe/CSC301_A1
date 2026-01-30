@@ -61,6 +61,7 @@ public class OrderHandler implements HttpHandler {
 
             if(userId==null || productId == null || quantityStr == null ||
                     userId.equals("invalid-info") || productId.equals("invalid-info") || quantityStr.equals("invalid-info")){
+                System.out.println("Enter the if statement; something is null");
                 sendError(exchange,400, "Invalid Request");
                 return;
             }
