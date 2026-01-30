@@ -1,0 +1,42 @@
+PRODUCT create 2000 product2000 "This is product 2000" 162.58 90
+PRODUCT create 2001 product2001 "This is product 2001" 202.66 60
+PRODUCT create 2002 product2002 "This is product 2002" 98.47 96
+PRODUCT create 2003 product2003 "This is product 2003" 197.51 3
+PRODUCT create 2004 product2004 "This is product 2004" 98.61 26
+PRODUCT create 2005 product2005 "This is product 2005" 152.70 34
+PRODUCT create 2006 product2006 "This is product 2006" 269.23 89
+PRODUCT create 2007 product2007 "This is product 2007" 79.18 89
+PRODUCT create 2008 product2008 "This is product 2008" 77.68 79
+PRODUCT create 2009 product2009 "This is product 2009" 283.03 71
+PRODUCT create 2010 product2010 "This is product 2010" 37.32 75
+PRODUCT create 2011 product2011 "This is product 2011" 8.50 28
+PRODUCT create 2012 product2012 "This is product 2012" 173.31 74
+PRODUCT create 2013 product2013 "This is product 2013" 139.85 97
+PRODUCT create 2014 product2014 "This is product 2014" 157.00 35
+PRODUCT create 2015 product2015 "This is product 2015" 175.73 35
+PRODUCT create 2016 product2016 "This is product 2016" 52.38 19
+PRODUCT create 2017 product2017 "This is product 2017" 221.85 82
+PRODUCT create 2018 product2018 "This is product 2018" 111.86 14
+PRODUCT create 2019 product2019 "This is product 2019" 209.20 51
+PRODUCT create 2024 "" "This is product 2024" 2.3 4
+PRODUCT create 2025 product2025 invalid_description 2.3 4
+PRODUCT create 2026 product2026 "This is product 2026" 5.0 0.5597
+PRODUCT create 2027 product2027 "This is product 2027" 5.0 -4
+PRODUCT create 2028 product2028 "This is product 2028" -5.0 4
+PRODUCT create 2000 product2000-duplicate "This is a duplicate product 2000" 5.0 9
+PRODUCT update 2001 name:product2001-update description:"This is product 2001 version 2" price:199.99 quantity:100
+PRODUCT update invalid_id name:"product 2002 invalid update"
+PRODUCT update 2003 description:""
+PRODUCT update 2004 price:-6.0
+PRODUCT update 2005 quantity:-6
+PRODUCT update 2006 quantity:0.6
+PRODUCT update 10000 description:"this product doesn't exist ;)"
+PRODUCT delete 2007 product2007 79.18 89
+PRODUCT delete 2008 invalid_name 77.68 79
+PRODUCT delete 10000 product10000 2.3 4
+PRODUCT delete 2009 product2009 280.0 71
+PRODUCT info 2001
+PRODUCT info 2010
+PRODUCT info abcd
+PRODUCT info 2007
+PRODUCT info 10000
