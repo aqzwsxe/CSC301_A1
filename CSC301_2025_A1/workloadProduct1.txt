@@ -18,12 +18,16 @@ PRODUCT create 2016 product2016 description2016 52.38 19
 PRODUCT create 2017 product2017 description2017 221.85 82
 PRODUCT create 2018 product2018 description2018 111.86 14
 PRODUCT create 2019 product2019 description2019 209.20 51
-PRODUCT create 2024  description2024 2.3 4
-PRODUCT create 2025 product2025 invalid_description 2.3 4
+PRODUCT create 2020 product2020 description2020 37.31 82
+PRODUCT create 2021 product2021 description2021 150.56 68
+PRODUCT create 2022 product2022 description2022 22.43 54
+PRODUCT create 2023 product2023 description2023 160.78 27
+PRODUCT create 2024 description2024 2.3 4
+PRODUCT create 2025 product2025 2.3 4
 PRODUCT create 2026 product2026 description2026 5.0 0.5597
 PRODUCT create 2027 product2027 description2027 5.0 -4
 PRODUCT create 2028 product2028 description2028 -5.0 4
-PRODUCT create 2000 product2000-duplicate This_is_a_duplicate_product 2000 5.0 9
+PRODUCT create 2000 product2000 description2000 5.0 9
 PRODUCT update 2001 name:product2001-update description:description2001 version 2 price:199.99 quantity:100
 PRODUCT update invalid_id name:product 2002 invalid update
 PRODUCT update 2003 description:
