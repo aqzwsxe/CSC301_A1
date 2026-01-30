@@ -162,7 +162,7 @@ public class UserHandler implements HttpHandler {
 
     private void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
         // Add new line character, so the terminal prompt will start a new line
-        System.out.println("The user send the request back to ISCS");
+//        System.out.println("The user send the request back to ISCS");
         String response1 = response + "\n";
         byte[] bytes = response1.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type","application/json");
@@ -182,6 +182,9 @@ public class UserHandler implements HttpHandler {
         }
 
         String username = getJsonValue(body, "username");
+        if(username.isEmpty()){
+            sendResponse(exchange,400,"{}");
+        }
         String email = getJsonValue(body, "email");
         String password = getJsonValue(body, "password");
         if(username==null || username.isEmpty()||
@@ -287,7 +290,7 @@ public class UserHandler implements HttpHandler {
             sendResponse(exchange, 200, "{}");
             return;
         } else{
-            sendResponse(exchange, 401, "{}");
+            sendResponse(exchange, 404, "{}");
             return;
         }
 

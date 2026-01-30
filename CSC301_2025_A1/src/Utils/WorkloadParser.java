@@ -82,7 +82,7 @@ public class WorkloadParser {
                     jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
                             command, parts[2], parts[3], parts[4], parts[5]);
                 }
-                System.out.println("Running the sendRequest");
+//                System.out.println("Running the sendRequest");
                 sendPostRequest("/user", jsonBody);
             }else if (command.equals("delete")){
                     if(parts.length != 6){
@@ -254,21 +254,20 @@ public class WorkloadParser {
     * */
     public static void sendPostRequest(String endpoint, String jsonBody){
         try {
-            System.out.println("run the sendPostRequest");
+            //System.out.println("run the sendPostRequest");
             String fullUrl = (orderUrl + endpoint).replaceAll("\\s", "");
 
             HttpRequest request  = HttpRequest.newBuilder()
                     .uri(URI.create(fullUrl))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
-            System.out.println("After the HTTPRequest");
+            //System.out.println("After the HTTPRequest");
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println(response.statusCode());
             System.out.println("POST " + endpoint + " | Status: " + response.statusCode());
-            System.out.println("Before the if statement");
-            if(response.statusCode() != 200){
-                System.out.println("Response Body: " + response.body());
-            }
+            System.out.println("Data: " + response.body());
+//            if(response.statusCode() != 200){
+//                System.out.println("Response Body: " + response.body());
+//            }
         } catch (Exception e) {
             System.out.println("Encounter an exception: " + e.getMessage());
         }
