@@ -12,6 +12,14 @@ import java.util.HashMap;
 public class ProductHandler implements HttpHandler {
     String errorResponse = "{}\n";
 
+    /**
+     * Routes requests based on HTTP method.
+     *
+     * <p><b>Assumptions:</b> Only GET and POST are supported. Other methods are ignored
+     * unless handled elsewhere.</p>
+     *
+     * @param exchange the HTTP exchange; must be non-null
+     */
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
@@ -27,6 +35,20 @@ public class ProductHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Handles a GET request to fetch a product by id from the request path.
+     *
+     * <p><b>Responses:</b>
+     * <ul>
+     *   <li>{@code 200}: product exists; response body is {@code product.toJson()}</li>
+     *   <li>{@code 400}: malformed path or non-integer id; response body is {@code errorResponse}</li>
+     *   <li>{@code 404}: no product with the given id; response body is {@code errorResponse}</li>
+     * </ul>
+     *
+     * @param exchange the HTTP exchange used to read and write the response; must be non-null
+     * @param path the request URI path; must be non-null
+     * @throws IOException if an I/O error occurs while sending the response
+     */
     private void handleGet(HttpExchange exchange, String path) throws IOException {
         String[] parts = path.split("/");
         if(parts.length < 3){
@@ -61,6 +83,12 @@ public class ProductHandler implements HttpHandler {
     // handle both Get requests and the Post requests
 
 
+    /**
+     * Handles a POST request to and redirects to handler based on the command.
+     *
+     * @param exchange the HTTP exchange used to read and write the response; must be non-null
+     * @throws IOException if an I/O error occurs while sending the response
+     */
     private void handlePost(HttpExchange exchange) throws IOException {
         InputStream is = exchange.getRequestBody();
         String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
@@ -195,6 +223,21 @@ public class ProductHandler implements HttpHandler {
         return true;
     }
 
+    /**
+     * Handles a create command. Create a new product in database if all fields are valid.
+     *
+     * <p><b>Responses:</b>
+     * <ul>
+     *   <li>{@code 200}: product creation success; response body is {@code product.toJson()}</li>
+     *   <li>{@code 400}: missing fields or invalid field type; response body is {@code errorResponse}</li>
+     *   <li>{@code 409}: duplicate product id; response body is {@code errorResponse}</li>
+     * </ul>
+     *
+     * @param exchange the HTTP exchange used to read and write the response; must be non-null
+     * @param id the product id of the product attempt to create
+     * @param body a JSON string containing the product id, name, description, price, and quantity
+     * @throws IOException if an I/O error occurs while sending the response
+     */
     public void handleCreate(HttpExchange exchange, int id, String body) throws IOException {
         // ID issues:
         if(ProductService.productDatabase.containsKey(id)){
@@ -222,6 +265,21 @@ public class ProductHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Handles a update command. Update a existing product in database if updating fields are valid.
+     *
+     * <p><b>Responses:</b>
+     * <ul>
+     *   <li>{@code 200}: product update success; response body is {@code product.toJson()}</li>
+     *   <li>{@code 400}: missing fields or invalid field type; response body is {@code errorResponse}</li>
+     *   <li>{@code 404}: product id does not exist; response body is {@code errorResponse}</li>
+     * </ul>
+     *
+     * @param exchange the HTTP exchange used to read and write the response; must be non-null
+     * @param id the product id of the product attempt to create
+     * @param body a JSON string containing the product id, name, description, price, and quantity
+     * @throws IOException if an I/O error occurs while sending the response
+     */
     public  void handleUpdate(HttpExchange exchange, int id, String body) throws IOException {
         Product product = ProductService.productDatabase.get(id);
         if(product == null){
@@ -232,6 +290,10 @@ public class ProductHandler implements HttpHandler {
         String description = getJsonValue(body, "description");
         String priceStr = getJsonValue(body, "price");
         String quantityStr = getJsonValue(body, "quantity");
+
+        if (name == null && description == null && priceStr == null && quantityStr == null) {
+            sendResponse(exchange, 400, errorResponse);
+        }
 
         if (name != null) {
             if (!name.isEmpty()) {
@@ -276,6 +338,21 @@ public class ProductHandler implements HttpHandler {
         sendResponse(exchange, 200, product.toJson());
     }
 
+    /**
+     * Handles a delete command. Delete a existing product in database if all fields are valid.
+     *
+     * <p><b>Responses:</b>
+     * <ul>
+     *   <li>{@code 200}: product delete success; response body is {@code product.toJson()}</li>
+     *   <li>{@code 400}: missing fields or invalid field type; response body is {@code errorResponse}</li>
+     *   <li>{@code 404}: product id does not exist; response body is {@code errorResponse}</li>
+     * </ul>
+     *
+     * @param exchange the HTTP exchange used to read and write the response; must be non-null
+     * @param id the product id of the product attempt to create
+     * @param body a JSON string containing the product id, name, description, price, and quantity
+     * @throws IOException if an I/O error occurs while sending the response
+     */
     public void handleDelete(HttpExchange exchange, int id, String body) throws IOException {
 
         Product product = ProductService.productDatabase.get(id);
