@@ -11,11 +11,31 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+/**
+ * ISCSHandler implements the routing logic for the Inter-service Communication Service.
+ * It acts as a reverse proxy that receives HTTP requests from clients and forwards they to the appropriate backend
+ * microservice (user or product) based on the URL path
+ */
 public class ISCSHandler implements HttpHandler {
+    /**
+     * The user service url
+     */
     private final String userServiceUrl;
+    /**
+     * The product service url
+     */
     private final String productServiceUrl;
+    /**
+     * The HTTP client used to forward intercepted requests to backend services.
+     */
     private  final HttpClient client;
 
+    /**
+     * The constructor of ISCSHandler. It constructs an ISCSHandler by reading backend service information from a
+     * configuration file (config.json). It also creates the HttpClient used for forwarding requests
+     * @param configFile
+     * @throws IOException
+     */
     public ISCSHandler(String configFile) throws IOException {
         String userIP = ConfigReader.getIp(configFile, "UserService").replace("\"", "").trim();
         int userPort = ConfigReader.getPort(configFile,"UserService");
@@ -32,6 +52,13 @@ public class ISCSHandler implements HttpHandler {
 
     }
 
+    /**
+     * Handle incoming HTTP exchanges by determining the target service, forwarding the request, and returning the
+     * backend's response to the original caller
+     * @param exchange the exchange containing the request from the
+     *                 client and used to send the response
+     * @throws IOException If an I/O error occurs during request processing or response delivery
+     */
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         // HttpExchange: the object that represents the entire conversation between the client and the server
@@ -81,6 +108,14 @@ public class ISCSHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Send an HTTP response back to the requester.
+     * Sets the Content-Type to application/json and writes the provided byte array to the response body
+     * @param exchange The current HTTP exchange
+     * @param statusCode The HTTP status code to return (For example: 200, 400 and 404)
+     * @param response The byte array representing the JSON response body
+     * @throws IOException If the response cannot be written to the stream
+     */
     private void sendResponse(HttpExchange exchange, int statusCode, byte[] response) throws IOException {
         // Telling the client (workload generator or the orderservice)
         // what kind of package it is about to receive

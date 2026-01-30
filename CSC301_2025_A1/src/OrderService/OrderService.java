@@ -9,8 +9,25 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
+/**
+ * The OrderService class initializes and manage the HTTP server response for
+ * processing order transactions. It serves as the entry point for order creation,
+ * validation, and retrieval by using microservices architecture.
+ *
+ */
 public class OrderService {
+    /**
+     * An database to store all the Orders
+     */
     public static final Map<Integer, Order> orderDatabase = new ConcurrentHashMap<>();
+
+    /**
+     * The Main entry point for Order Service.
+     * It reads network configuration (config.json), binds the server to the specified port,
+     * and maps the root context to the OrderHandler.
+     * @param args Command line arguments. Expects the path the configuration JSON as the first element.
+     * @throws IOException If the server cannot be initialized or the configuration file is inaccessible
+     */
     public static void main(String[] args) throws IOException {
         if(args.length < 1){
             System.out.println("The config file has some issues");

@@ -9,9 +9,26 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import Utils.ConfigReader;
 
+/**
+ * The ProductService class serves as the host for the inventory management Product microservice.
+ * It initializes an HTTP server to manage product data including different product details
+ */
 public class ProductService {
+    /**
+     * This is the database to store all the products
+     */
     public static Map<Integer, Product> productDatabase = new ConcurrentHashMap<>();
 
+    /**
+     * The main execution point for the Product microservice
+     * The method performs the following initialization steps:
+     * 1: Validates command-line arguments for configuration files
+     * 2: Parse network setting using the ConfigReader
+     * 3: Initializes the HttpServer and bind it to the service port
+     * 4: it is listening all the url start with /product
+     * @param args The command line arguments. Expects a path to a JSON configuration file
+     * @throws IOException If the server cannot be started or bound to the network port
+     */
     public static void main(String[] args) throws IOException {
         if(args.length < 1){
             System.err.println("Miss the config.json");

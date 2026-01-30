@@ -236,7 +236,7 @@ public class OrderHandler implements HttpHandler {
             Order newOrder = new Order(Integer.parseInt(productId), Integer.parseInt(userId), quantity, "Success");
             OrderService.orderDatabase.put(newOrder.getId(), newOrder);
         }catch (Exception e){
-            sendError(exchange, 500, "Internal Server Error");
+            sendError(exchange, 400, "Invalid Request");
         }
 
 

@@ -17,10 +17,30 @@ import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+/**
+ * WorkloadParser servers as the client-side simulation tool for the microservices
+ * It reads service commands from a workload text file, translates them into JSON-formatted
+ * HTTP requests, and dispatches them to the OrderService (act as a gateway)
+ */
 public class WorkloadParser {
-
+    /**
+     * The base URL of the Order Service gateway, initialized from config.json
+     */
     private static String orderUrl;
+    /**
+     * Shared HTTP client used to dispatch requests to the gateway
+     */
     private static final HttpClient client = HttpClient.newHttpClient();
+
+    /**
+     * Entry point for the workload simulation
+     * Parse the command line for the workload file path, initializes network coordinates, and enters a processing
+     * loop to execute commands line by line
+     * @param args Command line arguments. arg[0] should be the path to the workload.txt file
+     * @throws IOException If the workload file or configuration cannot read
+     * @throws InterruptedException If the HTTP request process is interrupted
+     * @throws URISyntaxException If the generated URLs are invalid
+     */
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException {
         // when run the program via terminal through runme.sh, pass the path to the text file
         // java WorkloadParser workload3u20c.txt
@@ -60,10 +80,15 @@ public class WorkloadParser {
     }
 
 
-    /*
-    *  This method build the jsonBody that will be sent to OrderService endpoint first. But eventually, the
-    *  jsonBody will be sent to the UserService
-    * */
+    /**
+     * Parses USER commands (create, get, update and delete) and generates the appropriate
+     * JSON payload for the gateway.
+     * @param command The specific action to perform (for example, create)
+     * @param parts The full array of command arguments from the workload file
+     * @throws IOException If the request dispatch fails
+     * @throws URISyntaxException If the URI is invalid
+     * @throws InterruptedException If the thread is interrupted
+     */
     public static void handleUser(String command, String[] parts) throws IOException, URISyntaxException, InterruptedException {
         //build JSON and send to Order Service
 //        System.out.println("The handleUser method is called inside the parser");
@@ -120,6 +145,18 @@ public class WorkloadParser {
         }
     }
 
+    /**
+     * Processes order specific workload commands and maps them to appropriate HTTP methods
+     * The method supports the following command structures
+     * 1: Triggers a POST request to create a new order (product_id, user_id and quantity)
+     * 2: Triggers a GET request to retrieve existing order details
+     * 3: Triggers a DELETE request to remove an order from the system
+     * @param parts An array of strings parsed from the workload file line.
+     *              Expected format: [service, action, arg1, arg2, arg3]
+     * @throws IOException If the connection to the OrderService fails
+     * @throws URISyntaxException If the constructed URI is malformed
+     * @throws InterruptedException If the thread is interrupted while waiting for a response
+     */
     public static void handleOrder(String[] parts) throws IOException, URISyntaxException, InterruptedException {
         if (parts.length < 3) {
             String jsonBody = "{\"command\":\"invalid-order\"}";
@@ -156,6 +193,12 @@ public class WorkloadParser {
 
     }
 
+    /**
+     * Executes a HTTP DELETE request to a specific endpoint on the OrderService.
+     * This method is primarily used for canceling existing orders. It constructs the target URI,
+     * removes whitespace, and dispatches the request using the shared HttpClient
+     * @param endpoint The relative path for the deletion target (for example: "/order/1000")
+     */
     public static void sendDeleteRequest(String endpoint){
         try {
             String fullUrl = (orderUrl + endpoint).replaceAll("\\s", "");
@@ -237,9 +280,15 @@ public class WorkloadParser {
     }
 
 
-    /*
-    * Specify the orderUrl. The requests will be sent to the Order Service
-    * */
+    /**
+     * Send an HTTP GET request to the OrderService gateway
+     * This method waits for the response string and logs both the status code and the body to the console
+     *
+     * @param endpoint endpoint the resource (For example, /user/1009)
+     * @throws IOException If a network error occurs during transmission
+     * @throws InterruptedException If the thread is interrupted while waiting for the response
+     * @throws URISyntaxException If the concatenated URL creates an invalid URI structure
+     */
     public static void sendGetRequest(String endpoint) throws IOException, InterruptedException, URISyntaxException {
         try {
             // when the code executes
@@ -272,6 +321,16 @@ public class WorkloadParser {
     /*
     * Specify the orderUrl. The request will be sent to the orderService
     * */
+
+    /**
+     * Executes an HTTP POST request to the OrderService gateway with a JSON payload
+     * This method set the Content-Type header to application/json, ensuring that the receiving
+     * service correctly interprets the body as a JSON object. It logs the target endpoint, the resulting HTTP
+     * status code, and the response body to the standard output
+     *
+     * @param endpoint endpoint the relative API path (for example, "/user" or "/order")
+     * @param jsonBody The string which represent a JSON object containing the command and data
+     */
     public static void sendPostRequest(String endpoint, String jsonBody){
         try {
             //System.out.println("run the sendPostRequest");
