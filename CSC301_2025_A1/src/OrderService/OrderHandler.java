@@ -39,8 +39,11 @@ public class OrderHandler implements HttpHandler {
         System.out.println("method "+ method);
         System.out.println("The bodyString: "+ bodyString);
         try {
-            // Check if it's a request to Place an order
-            if(method.equalsIgnoreCase("POST") && path.startsWith("/order")  && bodyString.contains("place order")){
+            if(method.equalsIgnoreCase("GET") && path.startsWith("/order/")){
+                handleGetOrder(exchange,path);
+            }else if(method.equalsIgnoreCase("DELETE")&& path.startsWith("/order/")){
+                handleCancelOrder(exchange, path);
+            } else if(method.equalsIgnoreCase("POST") && path.startsWith("/order")  && bodyString.contains("place order")){
                 handlePlaceOrder(exchange, bodyString);
             }else{
                 forwardToISCS(exchange,method,path,requestBody);
@@ -53,6 +56,65 @@ public class OrderHandler implements HttpHandler {
         }
     }
 
+    private void handleGetOrder(HttpExchange exchange, String path) throws IOException {
+        String[] parts = path.split("/");
+        if (parts.length < 3){
+            sendError(exchange,400, "{}");
+            return;
+        }
+        try {
+            int orderId = Integer.parseInt(parts[2]);
+            Order order = OrderService.orderDatabase.get(orderId);
+            if(order != null){
+                sendResponse(exchange, 200, order.toJson().getBytes());
+            }else{
+                sendError(exchange, 404, "{}");
+            }
+        }catch (NumberFormatException e){
+            sendError(exchange, 400, "Invalid Order ID format");
+            return;
+        }
+    }
+
+    private void handleCancelOrder(HttpExchange exchange, String path) throws IOException {
+        String[] parts = path.split("/");
+        if(parts.length < 3){
+            sendError(exchange, 400, "Invalid Order ID");
+        }
+
+        try {
+            int orderId = Integer.parseInt(parts[2]);
+            Order order = OrderService.orderDatabase.get(orderId);
+            if(order==null){
+                sendError(exchange, 404, "Order not found");
+                return;
+            }
+            HttpResponse<String> prodRes = client.send(
+                    HttpRequest.newBuilder().uri(URI.create(iscsUrl + "/product/" + order.getProduct_id())).GET().build(),
+                    HttpResponse.BodyHandlers.ofString()
+            );
+            if(prodRes.statusCode() == 200){
+                int currentStock = Integer.parseInt(getJsonValue(prodRes.body(), "quantity"));
+                int restoredStock = currentStock + order.getQuantity();
+
+                String updateBody = String.format(
+                        "{\"command\": \"update\", \"id\": %d, \"quantity\": %d}",
+                        order.getProduct_id(), restoredStock
+                );
+
+                client.send(
+                        HttpRequest.newBuilder()
+                                .uri(URI.create(iscsUrl + "/product"))
+                                .header("Content-Type", "application/json")
+                                .POST(HttpRequest.BodyPublishers.ofString(updateBody))
+                                .build(),
+                        HttpResponse.BodyHandlers.ofByteArray()
+                );
+            }
+            OrderService.orderDatabase.remove(orderId);
+            sendResponse(exchange, 200, "{\"status\": \"Order cancelled and stock restored\"}".getBytes());
+        }catch (Exception e){}
+    }
     private  void  handlePlaceOrder(HttpExchange exchange, String body) throws IOException, InterruptedException {
         try {
             String userId = getJsonValue(body, "user_id");

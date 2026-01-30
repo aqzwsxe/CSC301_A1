@@ -37,4 +37,17 @@ public class Order {
     public String getStatus() {
         return status;
     }
+
+
+    public String toJson(){
+        String result = String.format("{\n" +
+                        "    \"id\": %d,\n" +
+                        "    \"product_id\": %d,\n" +
+                        "    \"user_id\": %d,\n" +
+                        "    \"quantity\": %d,\n" +
+                        "    \"status\": \"%s\"\n" +
+                        "}",
+                id, this.product_id, this.user_id, this.quantity, status);
+        return result;
+    }
 }
