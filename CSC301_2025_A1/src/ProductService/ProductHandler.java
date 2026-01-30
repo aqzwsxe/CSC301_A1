@@ -298,8 +298,10 @@ public class ProductHandler implements HttpHandler {
             if (product.getName().equals(name)  && product.getPrice() == price &&
                     product.getQuantity() == quantity) { // && product.getDescription().equals(description)
                 ProductService.productDatabase.remove(id);
+                sendResponse(exchange, 200, "{}\n");
+            } else {
+                sendResponse(exchange,400, errorResponse);
             }
-            sendResponse(exchange, 200, "{}\n");
         } else {
             sendResponse(exchange,400, errorResponse);
         }
