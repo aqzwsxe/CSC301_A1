@@ -290,9 +290,6 @@ public class ProductHandler implements HttpHandler {
 
         if (inputContentCheck(body, false)) {
             String name = getJsonValue(body, "name");
-//          String description = getJsonValue(body, "description");
-        if (inputContentCheck(body, false)) {
-            String name = getJsonValue(body, "name");
 //            String description = getJsonValue(body, "description");
             float price = Float.parseFloat(getJsonValue(body, "price"));
             int quantity = Integer.parseInt(getJsonValue(body, "quantity"));
