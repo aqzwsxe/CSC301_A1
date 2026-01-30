@@ -6,8 +6,10 @@ package ProductService;
  * <p><b>Invariants:</b>
  * <ul>
  *   <li>{@code pid} always exists.</li>
- *   <li>{@code price} always positive.</li>
- *   <li>{@code quantity} always positive.</li>
+ *   <li>{@code name} always exists and non-empty.</li>
+ *   <li>{@code description} always exists and non-empty.</li>
+ *   <li>{@code price} always exists and positive.</li>
+ *   <li>{@code quantity} always exists and positive.</li>
  * </ul>
  */
 public class Product {
@@ -18,7 +20,7 @@ public class Product {
     int quantity_in_stock;
 
     /**
-     * Initializes a new {@code Product}.
+     * Initializes a new Product.
      *
      * @param pid the product id
      * @param name the product name; must be non-empty
@@ -82,7 +84,7 @@ public class Product {
     /**
      * Update the product name
      *
-     * @param name the product name; must be String
+     * @param name the product name; must be non-empty
      */
     public void setName(String name) {
         this.name = name;
