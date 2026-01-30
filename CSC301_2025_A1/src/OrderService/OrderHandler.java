@@ -39,8 +39,11 @@ public class OrderHandler implements HttpHandler {
         System.out.println("method "+ method);
         System.out.println("The bodyString: "+ bodyString);
         try {
-            // Check if it's a request to Place an order
-            if(method.equalsIgnoreCase("POST") && path.startsWith("/order")  && bodyString.contains("place order")){
+            if(method.equalsIgnoreCase("GET") && path.startsWith("/order/")){
+                handleGetOrder(exchange,path);
+            }else if(method.equalsIgnoreCase("DELETE")&& path.startsWith("/order/")){
+                handleCancelOrder(exchange, path);
+            } else if(method.equalsIgnoreCase("POST") && path.startsWith("/order")  && bodyString.contains("place order")){
                 handlePlaceOrder(exchange, bodyString);
             }else{
                 forwardToISCS(exchange,method,path,requestBody);
@@ -51,6 +54,94 @@ public class OrderHandler implements HttpHandler {
             }catch (Exception e1){}
 
         }
+    }
+
+    /**
+     * Get order information based on order id
+     *
+     * <p><b>Responses:</b>
+     * <ul>
+     *   <li>{@code 200}: order information found success; response body is {@code order.toJson().getBytes()}</li>
+     *   <li>{@code 400}: missing fields or invalid field type/value; response body is {@code {}}</li>
+     *   <li>{@code 404}: order not found; response body is {@code {}}</li>
+     * </ul>
+     *
+     * @param exchange the HTTP exchange used to read and write the response; must be non-null
+     * @param path the request URI path; must be non-null
+     * @throws IOException if an I/O error occurs while sending the response
+     */
+    private void handleGetOrder(HttpExchange exchange, String path) throws IOException {
+        String[] parts = path.split("/");
+        if (parts.length < 3){
+            sendError(exchange,400, "{}");
+            return;
+        }
+        try {
+            int orderId = Integer.parseInt(parts[2]);
+            Order order = OrderService.orderDatabase.get(orderId);
+            if(order != null){
+                sendResponse(exchange, 200, order.toJson().getBytes());
+            }else{
+                sendError(exchange, 404, "{}");
+            }
+        }catch (NumberFormatException e){
+            sendError(exchange, 400, "Invalid Order ID format");
+            return;
+        }
+    }
+
+    /**
+     * Cancel order based on order id
+     *
+     * <p><b>Responses:</b>
+     * <ul>
+     *   <li>{@code 200}: order cancellation success; response body is {@code order.toJson().getBytes()}</li>
+     *   <li>{@code 400}: missing fields or invalid field type/value; response body is {@code {}}</li>
+     *   <li>{@code 404}: order not found; response body is {@code {}}</li>
+     * </ul>
+     *
+     * @param exchange the HTTP exchange used to read and write the response; must be non-null
+     * @param path the request URI path; must be non-null
+     * @throws IOException if an I/O error occurs while sending the response
+     */
+    private void handleCancelOrder(HttpExchange exchange, String path) throws IOException {
+        String[] parts = path.split("/");
+        if(parts.length < 3){
+            sendError(exchange, 400, "Invalid Order ID");
+        }
+
+        try {
+            int orderId = Integer.parseInt(parts[2]);
+            Order order = OrderService.orderDatabase.get(orderId);
+            if(order==null){
+                sendError(exchange, 404, "Order not found");
+                return;
+            }
+            HttpResponse<String> prodRes = client.send(
+                    HttpRequest.newBuilder().uri(URI.create(iscsUrl + "/product/" + order.getProduct_id())).GET().build(),
+                    HttpResponse.BodyHandlers.ofString()
+            );
+            if(prodRes.statusCode() == 200){
+                int currentStock = Integer.parseInt(getJsonValue(prodRes.body(), "quantity"));
+                int restoredStock = currentStock + order.getQuantity();
+
+                String updateBody = String.format(
+                        "{\"command\": \"update\", \"id\": %d, \"quantity\": %d}",
+                        order.getProduct_id(), restoredStock
+                );
+
+                client.send(
+                        HttpRequest.newBuilder()
+                                .uri(URI.create(iscsUrl + "/product"))
+                                .header("Content-Type", "application/json")
+                                .POST(HttpRequest.BodyPublishers.ofString(updateBody))
+                                .build(),
+                        HttpResponse.BodyHandlers.ofByteArray()
+                );
+            }
+            OrderService.orderDatabase.remove(orderId);
+            sendResponse(exchange, 200, "{\"status\": \"Order cancelled and stock restored\"}".getBytes());
+        }catch (Exception e){}
     }
 
     /**
@@ -72,6 +163,7 @@ public class OrderHandler implements HttpHandler {
         try {
             String userId = getJsonValue(body, "user_id");
             String productId = getJsonValue(body, "product_id");
+            // the quantity the order want
             String quantityStr = getJsonValue(body, "quantity");
 
             if(userId==null || productId == null || quantityStr == null ||
@@ -131,13 +223,13 @@ public class OrderHandler implements HttpHandler {
             client.send(
                     HttpRequest.newBuilder()
                             .uri(URI.create(iscsUrl + "/product"))
+                            .header("Content-Type", "application/json")
                             .POST(HttpRequest.BodyPublishers.ofString(updateBody))
                             .build(),
                     HttpResponse.BodyHandlers.ofByteArray()
             );
 
             sendResponse(exchange, 200, successJson.getBytes());
-            Integer.parseInt(productId);
             Order newOrder = new Order(Integer.parseInt(productId), Integer.parseInt(userId), quantity, "Success");
             OrderService.orderDatabase.put(newOrder.getId(), newOrder);
         }catch (Exception e){

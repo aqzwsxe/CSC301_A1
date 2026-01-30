@@ -66,7 +66,7 @@ public class ISCSHandler implements HttpHandler {
             if(method.equalsIgnoreCase("POST")){
                 byte[] body = exchange.getRequestBody().readAllBytes();
                 requestBuilder.POST(HttpRequest.BodyPublishers.ofByteArray(body));
-
+                requestBuilder.header("Content-Type", "application/json");
             }else{
                 requestBuilder.GET();
             }
@@ -75,7 +75,7 @@ public class ISCSHandler implements HttpHandler {
             sendResponse(exchange, response.statusCode(), response.body());
         } catch (Exception e) {
 
-            byte[] error = ("ISCS Error: " + e.getMessage()).getBytes();
+            byte[] error = ("{\"error\": \"ISCS Error: " + e.getMessage() + "\"}").getBytes();
             sendResponse(exchange, 502, error);
             throw new RuntimeException(e);
         }

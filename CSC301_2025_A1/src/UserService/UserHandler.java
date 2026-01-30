@@ -85,7 +85,7 @@ public class UserHandler implements HttpHandler {
      * <ul>
      *   <li>{@code 200}: user exists; response body is {@code user.toJson()}</li>
      *   <li>{@code 400}: malformed path or non-integer id; response body is {@code {}}</li>
-     *   <li>{@code 404}: no product with the given id; response body is {@code {}}</li>
+     *   <li>{@code 404}: no user with the given id; response body is {@code {}}</li>
      * </ul>
      *
      * @param exchange the HTTP exchange used to read and write the response; must be non-null
@@ -145,7 +145,7 @@ public class UserHandler implements HttpHandler {
     private void handlePost(HttpExchange exchange) throws IOException, NoSuchAlgorithmException {
         InputStream is = exchange.getRequestBody();
         String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-        System.out.println("inside the handlePost: "+body);
+//        System.out.println("inside the handlePost: "+body);
 
         String command = getJsonValue(body, "command");
         String idStr = getJsonValue(body, "id");
@@ -251,6 +251,7 @@ public class UserHandler implements HttpHandler {
         String username = getJsonValue(body, "username");
         if(username.isEmpty()){
             sendResponse(exchange,400,"{}");
+            return;
         }
         String email = getJsonValue(body, "email");
         String password = getJsonValue(body, "password");
