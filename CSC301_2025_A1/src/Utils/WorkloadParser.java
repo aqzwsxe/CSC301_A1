@@ -74,7 +74,7 @@ public class WorkloadParser {
             if (command.equals("create")) {
                 // A valid create user process need
                 if(parts.length!=6){
-                    System.out.println("The length of the creat user command is less than 6");
+//                    System.out.println("The length of the creat user command is less than 6");
                     jsonBody = String.format("{\"command\":\"%s\",\"id\":%s,\"username\":\"%s\",\"email\":\"%s\",\"password\":\"%s\"}",
                             command, "invalid-info", "invalid-info", "invalid-info", "invalid-info");
                 }

@@ -1,5 +1,8 @@
 USER create 1 username1 fzh@gmail.com 12345
 PRODUCT create 3 p1 abcdefddd 123 10
+PRODUCT info 3
 ORDER place 3 1 1
+PRODUCT info 3
 ORDER place 3 1 2000
+PRODUCT info 3
 ORDER place 9993 1 3
