@@ -9,6 +9,9 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
+/**
+ * Handle the given product request and generate an appropriate response.
+ */
 public class ProductHandler implements HttpHandler {
     String errorResponse = "{}\n";
 

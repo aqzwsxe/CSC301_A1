@@ -12,6 +12,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 
+/**
+ * Handle the given user request and generate an appropriate response.
+ */
 public class UserHandler implements HttpHandler {
 
     /**

@@ -14,6 +14,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Handle the given order request and generate an appropriate response.
+ */
 public class OrderHandler implements HttpHandler {
     private final String iscsUrl;
     private final HttpClient client;
