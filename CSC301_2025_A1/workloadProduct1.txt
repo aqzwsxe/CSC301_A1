@@ -30,7 +30,7 @@ PRODUCT create 2028 product2028 description2028 -5.0 4
 PRODUCT create 2000 product2000 description2000 5.0 9
 PRODUCT update 2001 name:product2001-update description:description2001 version 2 price:199.99 quantity:100
 PRODUCT update invalid_id name:product 2002 invalid update
-PRODUCT update 2003 description:
+PRODUCT update 2003
 PRODUCT update 2004 price:-6.0
 PRODUCT update 2005 quantity:-6
 PRODUCT update 2006 quantity:0.6
