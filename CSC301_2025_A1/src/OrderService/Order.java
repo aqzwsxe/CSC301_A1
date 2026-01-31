@@ -102,6 +102,14 @@ public class Order {
     }
 
     /**
+     * Update the status of the order
+     * @param newStatus the new status
+     */
+    public void setStatus(String newStatus){
+        this.status = newStatus;
+    }
+
+    /**
      * Convert the order information into json format.
      *
      * @return a JSON string containing the order's id, product id, user id, quantity and status
