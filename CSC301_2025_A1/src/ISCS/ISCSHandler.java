@@ -11,17 +11,37 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+/**
+ * ISCSHandler implements the routing logic for the Inter-service Communication Service.
+ * It acts as a reverse proxy that receives HTTP requests from clients and forwards them to the appropriate backend
+ * microservice (user or product) based on the URL path
+ */
 public class ISCSHandler implements HttpHandler {
+    /**
+     * The user service url
+     */
     private final String userServiceUrl;
+    /**
+     * The product service url
+     */
     private final String productServiceUrl;
+    /**
+     * The HTTP client used to forward intercepted requests to backend services.
+     */
     private  final HttpClient client;
 
+    /**
+     * The constructor of ISCSHandler. It constructs an ISCSHandler by reading backend service information from a
+     * configuration file (config.json). It also creates the HttpClient used for forwarding requests
+     * @param configFile The path to the JSON configuration file
+     * @throws IOException If the configuration file cannot be read or parsed
+     */
     public ISCSHandler(String configFile) throws IOException {
         String userIP = ConfigReader.getIp(configFile, "UserService").replace("\"", "").trim();
         int userPort = ConfigReader.getPort(configFile,"UserService");
         this.userServiceUrl = "http://"+userIP+":"+userPort;
 
-        String productIp = ConfigReader.getIp(configFile, "ProductService").replace("\"", "");
+        String productIp = ConfigReader.getIp(configFile, "ProductService").replace("\"", "").trim();
         int productPort = ConfigReader.getPort(configFile, "ProductService");
         this.productServiceUrl = "http://"+productIp + ":" + productPort;
 
@@ -32,6 +52,12 @@ public class ISCSHandler implements HttpHandler {
 
     }
 
+    /**
+     * Handle incoming HTTP exchanges by determining the target service, forwarding the request, and returning the
+     * backend's response to the original caller
+     * @param exchange the exchange containing the request from the client; it is also used to dispatch the response.
+     * @throws IOException If an I/O error occurs during request processing or response delivery
+     */
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         // HttpExchange: the object that represents the entire conversation between the client and the server
@@ -75,12 +101,20 @@ public class ISCSHandler implements HttpHandler {
             sendResponse(exchange, response.statusCode(), response.body());
         } catch (Exception e) {
 
-            byte[] error = ("{\"error\": \"ISCS Error: " + e.getMessage() + "\"}").getBytes();
-            sendResponse(exchange, 502, error);
+            byte[] error = "{}".getBytes();
+            sendResponse(exchange, 400, error);
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Send an HTTP response back to the requester.
+     * Sets the Content-Type to application/json and writes the provided byte array to the response body
+     * @param exchange The current HTTP exchange
+     * @param statusCode The HTTP status code to return (For example: 200, 400 and 404)
+     * @param response The byte array representing the JSON response body
+     * @throws IOException If the response cannot be written to the stream
+     */
     private void sendResponse(HttpExchange exchange, int statusCode, byte[] response) throws IOException {
         // Telling the client (workload generator or the orderservice)
         // what kind of package it is about to receive

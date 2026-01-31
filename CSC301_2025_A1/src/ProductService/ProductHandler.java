@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 /**
- * Handle the given product request and generate an appropriate response.
+ * Handles the given product request and generates an appropriate response.
  */
 public class ProductHandler implements HttpHandler {
     String errorResponse = "{}\n";
@@ -39,7 +39,7 @@ public class ProductHandler implements HttpHandler {
     }
 
     /**
-     * Handles a GET request to fetch a product by id from the request path.
+     * Handles a GET request to fetch a product by ID from the request path.
      *
      * <p><b>Responses:</b>
      * <ul>
@@ -188,7 +188,7 @@ public class ProductHandler implements HttpHandler {
      *
      * @param body a JSON string containing the product id, name, description, price, and quantity
      * @param desc_matter a Boolean of whether description will be checked
-     * @return a Boolean of whether the JSON string is valid
+     * @return a Boolean determining whether the description should be validated
      */
     private Boolean inputContentCheck(String body, Boolean desc_matter){
         // Name issues:
@@ -260,7 +260,7 @@ public class ProductHandler implements HttpHandler {
      * </ul>
      *
      * @param exchange the HTTP exchange used to read and write the response; must be non-null
-     * @param id the product id of the product attempt to create
+     * @param id the product id of the product to be created
      * @param body a JSON string containing the product id, name, description, price, and quantity
      * @throws IOException if an I/O error occurs while sending the response
      */
@@ -302,7 +302,7 @@ public class ProductHandler implements HttpHandler {
      * </ul>
      *
      * @param exchange the HTTP exchange used to read and write the response; must be non-null
-     * @param id the product id of the product attempt to create
+     * @param id the product id of the product to be updated
      * @param body a JSON string containing the product id, name, description, price, and quantity
      * @throws IOException if an I/O error occurs while sending the response
      */
@@ -380,7 +380,7 @@ public class ProductHandler implements HttpHandler {
      * </ul>
      *
      * @param exchange the HTTP exchange used to read and write the response; must be non-null
-     * @param id the product id of the product attempt to create
+     * @param id the product id of the product to be deleted
      * @param body a JSON string containing the product id, name, description, price, and quantity
      * @throws IOException if an I/O error occurs while sending the response
      */

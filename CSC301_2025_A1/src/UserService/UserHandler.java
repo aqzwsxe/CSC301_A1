@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 /**
- * Handle the given user request and generate an appropriate response.
+ * Handles the given user request and generate an appropriate response.
  */
 public class UserHandler implements HttpHandler {
 
@@ -82,7 +82,7 @@ public class UserHandler implements HttpHandler {
     }
 
     /**
-     * Handles a GET request to fetch a product by id from the request path.
+     * Handles a GET request to fetch a user by ID from the request path.
      *
      * <p><b>Responses:</b>
      * <ul>
@@ -239,7 +239,7 @@ public class UserHandler implements HttpHandler {
      * </ul>
      *
      * @param exchange the HTTP exchange used to read and write the response; must be non-null
-     * @param id the product id of the product attempt to create
+     * @param id the user ID of the user to be created/updated
      * @param body a JSON string containing the user id, username, email, password
      * @throws IOException if an I/O error occurs while sending the response
      */

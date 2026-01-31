@@ -15,14 +15,30 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Handle the given order request and generate an appropriate response.
+ * Handles the given order request and generates an appropriate response.
  */
 public class OrderHandler implements HttpHandler {
+    /**
+     * The base URL for the ISCS
+     * All requests that require data from the User or Product services are
+     * forwarded to this address for routing
+     */
     private final String iscsUrl;
+    /**
+     * The HTTP client used for backend.
+     */
     private final HttpClient client;
 
 
+    /**
+     * The constructor of OrderHandler. It constructs an Orderhandler by resolving the
+     * location of the ISCS. This constructor parses the configuration file to obtain the network coordinates (IP and Port)
+     * for the ISCS. It then initializes an HttpClient that will be used for all upstream communication during the
+     * order process
 
+     * @param configFile the path to the configuration JSON file containing service network settings.
+     * @throws IOException If the configuration file cannot be accessed or parsed
+     */
     public OrderHandler(String configFile) throws IOException {
         String rawIp = ConfigReader.getIp(configFile, "InterServiceCommunication");
         int port = ConfigReader.getPort(configFile, "InterServiceCommunication");
@@ -32,6 +48,16 @@ public class OrderHandler implements HttpHandler {
         this.client = HttpClient.newHttpClient();
     }
 
+    /**
+     * Main request dispatcher for the OrderService
+     * This method intercepts all incoming HTTP traffic and routes it based on
+     * the HTTP verb and the URI path. Requests specific to the order lifecycle
+     * (GET, DELETE, or 'place order' POSTs) are handled locally, while all other traffic
+     * if forwarded to the ISCS for further routing
+     * @param exchange the exchange containing the request from the
+     *                 client and used to send the response
+     * @throws IOException If an I/O error occurs during request reading or response delivery
+     */
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
@@ -148,7 +174,7 @@ public class OrderHandler implements HttpHandler {
     }
 
     /**
-     * Place an order based on user id and product id if corresponding product have sufficient quantity
+     * Place an order based on user id and product id if corresponding product has sufficient quantity
      * in stock
      *
      * <p><b>Responses:</b>
@@ -231,18 +257,31 @@ public class OrderHandler implements HttpHandler {
                             .build(),
                     HttpResponse.BodyHandlers.ofByteArray()
             );
-
-            sendResponse(exchange, 200, successJson.getBytes());
             Order newOrder = new Order(Integer.parseInt(productId), Integer.parseInt(userId), quantity, "Success");
             OrderService.orderDatabase.put(newOrder.getId(), newOrder);
+            sendResponse(exchange, 200, successJson.getBytes());
+
         }catch (Exception e){
-            sendError(exchange, 500, "Internal Server Error");
+            sendError(exchange, 400, "Invalid Request");
         }
 
 
     }
 
 
+    /**
+     * Forwards an incoming HTTP request to the ISCS Service.
+     * This method acts as a reverse proxy. It reconstructs the original request
+     * (method, path, and body) and dispatches it to the ISCS. Once the ISCS returns
+     * a response from the destination microservice, this method relays that response including
+     * the status code and data back to the original client
+     * @param exchange The original HttpExchange from the client
+     * @param method The HTTP verb (GET, POST, etc.) to reuse
+     * @param path The URI path to append to the ISCS base URL
+     * @param requestBody The raw bytes of the original request body
+     * @throws IOException If network communication with the ISCS fails
+     * @throws InterruptedException If the forwarding process is interrupted
+     */
     private void forwardToISCS(HttpExchange exchange, String method, String path, byte[] requestBody) throws IOException, InterruptedException {
         HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(iscsUrl+path));
         if(method.equalsIgnoreCase("POST")){

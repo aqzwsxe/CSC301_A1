@@ -3,7 +3,7 @@ package OrderService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Represents a order with an unique id.
+ * Represents an order with a unique id.
  *
  * <p><b>Invariants:</b>
  * <ul>
@@ -15,15 +15,33 @@ import java.util.concurrent.atomic.AtomicInteger;
  * </ul>
  */
 public class Order {
+    /**
+     * A thread-safe counter used to generate unique, sequential order IDs.
+     */
     public static final AtomicInteger id_counter = new AtomicInteger(0);
+    /**
+     * The unique identifier for the product being ordered.
+     */
     private  int product_id;
+    /**
+     * The unique identifier for the user who placed the order.
+     */
     private  int user_id;
+    /**
+     * The number of units requested in this order.
+     */
     private  int quantity;
+    /**
+     * The current lifecycle state of the order (e.g. "Success")
+     */
     private String status;
+    /**
+     * The unique ID assigned to this specific order instance
+     */
     private int id;
 
     /**
-     * Initializes a new Product.
+     * Initializes a new Order.
      *
      * @param product_id the product id
      * @param user_id the user id
@@ -86,7 +104,7 @@ public class Order {
     /**
      * Convert the order information into json format.
      *
-     * @return a JSON string contains the order's id, product id, user id, quantity and status
+     * @return a JSON string containing the order's id, product id, user id, quantity and status
      */
     public String toJson(){
         String result = String.format("{\n" +

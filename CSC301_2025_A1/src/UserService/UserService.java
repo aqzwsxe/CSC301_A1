@@ -10,12 +10,29 @@ import java.util.concurrent.Executors;
 
 import Utils.ConfigReader;
 
+/**
+ * The UserService class is the entry point for the user management microservice.
+ * It initializes an HTTP server dedicated to handling user related operations
+ * such as creation, retrieval, updates and deletions
+ */
 public class UserService {
 //    Use ConcurrentHashMap instead rather than HashMap, because server is multi-threaded
 //    create an interface or super-class, the map is the placeholder; when receive the new requirement; create
     // the actual subclass for the database
+    /**
+     * This is the database to store all the Users
+     */
     public static Map<Integer, User> userDatabase = new ConcurrentHashMap<>();
 
+    /**
+     * The main execution point that starts the User microservice
+     * This method performs the following operations
+     * 1: reads network configuration from the provided JSON file path
+     * 2: Binds the HttpServer to the configured port.
+     * 3: Registers a context listener for all URLs starting with
+     * @param args The command line arguments; expects the config file path at index 0.
+     * @throws IOException If the server cannot be started or bound to the network port.
+     */
     public static void main(String[] args) throws IOException {
         // Get port from config
 //        int port = Utils.ConfigReader.getPort(args[0], "UserService");
