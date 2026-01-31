@@ -12,7 +12,7 @@ import Utils.ConfigReader;
 
 /**
  * The UserService class is the entry point for the user management microservice.
- * It initializes an HTTP server dedicated to handle user related operations
+ * It initializes an HTTP server dedicated to handling user related operations
  * such as creation, retrieval, updates and deletions
  */
 public class UserService {
@@ -29,9 +29,9 @@ public class UserService {
      * This method performs the following operations
      * 1: reads network configuration from the provided JSON file path
      * 2: Binds the HttpServer to the configured port.
-     * 3: Listening all the url start with /user
-     * @param args
-     * @throws IOException
+     * 3: Registers a context listener for all URLs starting with
+     * @param args The command line arguments; expects the config file path at index 0.
+     * @throws IOException If the server cannot be started or bound to the network port.
      */
     public static void main(String[] args) throws IOException {
         // Get port from config

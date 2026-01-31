@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 /**
- * WorkloadParser servers as the client-side simulation tool for the microservices
+ * WorkloadParser serves as the client-side simulation tool for the microservices
  * It reads service commands from a workload text file, translates them into JSON-formatted
  * HTTP requests, and dispatches them to the OrderService (act as a gateway)
  */
@@ -83,7 +83,7 @@ public class WorkloadParser {
     /**
      * Parses USER commands (create, get, update and delete) and generates the appropriate
      * JSON payload for the gateway.
-     * @param command The specific action to perform (for example, create)
+     * @param command The specific action to perform (for example, 'create')
      * @param parts The full array of command arguments from the workload file
      * @throws IOException If the request dispatch fails
      * @throws URISyntaxException If the URI is invalid

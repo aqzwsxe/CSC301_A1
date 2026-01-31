@@ -1,7 +1,7 @@
 package ProductService;
 
 /**
- * Represents a product with an unique id.
+ * Represents a product with a unique id.
  *
  * <p><b>Invariants:</b>
  * <ul>
@@ -73,16 +73,16 @@ public class Product {
     }
 
     /**
-     * Returns the product price
+     * Returns the product quantity in stock.
      *
-     * @return the product price
+     * @return the product quantity in stock.
      */
     public int getQuantity() {
         return this.quantity_in_stock;
     }
 
     /**
-     * Update the product name
+     * Updates the product name
      *
      * @param name the product name; must be non-empty
      */
@@ -91,7 +91,7 @@ public class Product {
     }
 
     /**
-     * Update the product description
+     * Updates the product description
      *
      * @param description the product description; must be non-empty
      */
@@ -100,7 +100,7 @@ public class Product {
     }
 
     /**
-     * Update the product price
+     * Updates the product price
      *
      * <p> If price is negative, then the value will not change
      *
@@ -113,7 +113,7 @@ public class Product {
     }
 
     /**
-     * Update the product quantity
+     * Updates the product quantity
      *
      * <p> If quantity is negative, then the value will not change
      *
@@ -126,7 +126,7 @@ public class Product {
     /**
      * Convert the product information into json format.
      *
-     * @return a JSON string contains the product's id, name, description, price and quantity
+     * @return a JSON string containing the product's id, name, description, price and quantity
      */
     public String toJson(){
         return String.format("{\n" +

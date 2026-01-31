@@ -5,15 +5,15 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
- * Utility class for parsing network configuration file
+ * Utility class for parsing a network configuration file
  * This class provides methods to manually extract port numbers and IP addresses
- * for various microservices without the need for external JSON parsing libraries
+ * for various microservices without the need for external JSON parsing libraries.
  *
  */
 public class ConfigReader {
     /**
      * Parses the specified configuration file to retrieve the port number for a given service.
-     * @param configFile The pah to the JSON configuration file
+     * @param configFile The path to the JSON configuration file
      * @param serviceName The name of the service (For example, "UserService")
      * @return The port number as an integer
      * @throws IOException If the file cannot be read
@@ -43,7 +43,7 @@ public class ConfigReader {
      * Parses the specified configuration file to retrieve the IP address for a given service.
      * @param configFile The path to the JSON configuration file
      * @param serviceName The name of the service
-     * @return The IP address as string
+     * @return The IP address as a string
      * @throws IOException If the file cannot be read
      */
     public static String getIp(String configFile, String serviceName) throws IOException {

@@ -1,11 +1,11 @@
 package UserService;
 
 /**
- * Represents a user with an unique id.
+ * Represents a user with a unique id.
  *
  * <p><b>Invariants:</b>
  * <ul>
- *   <li>{@code pid} always exists.</li>
+ *   <li>{@code id} always exists.</li>
  *   <li>{@code username} always exists and non-empty.</li>
  *   <li>{@code email} always exists and non-empty.</li>
  *   <li>{@code password} always exists and non-empty.</li>
@@ -69,7 +69,7 @@ public class User  {
     }
 
     /**
-     * Update the user id
+     * Updates the user id
      *
      * @param id the user id
      */
@@ -78,7 +78,7 @@ public class User  {
     }
 
     /**
-     * Update the username
+     * Updates the username
      *
      * @param username the username; must be non-empty
      */
@@ -87,7 +87,7 @@ public class User  {
     }
 
     /**
-     * Update the user email
+     * Updates the user email
      *
      * @param email the user email; must be non-empty and contain exactly one @
      */
@@ -96,7 +96,7 @@ public class User  {
     }
 
     /**
-     * Update the user password
+     * Updates the user password
      *
      * @param password the user password; must be non-empty
      */
@@ -107,7 +107,7 @@ public class User  {
     /**
      * Convert the user information into json format.
      *
-     * @return a JSON string contains the user's id, username, and email
+     * @return a JSON string containing the user's ID, username, and email
      */
     public String toJson(){
         return String.format("{\"id\": %d, \"username\": \"%s\", \"email\": \"%s\"}",
