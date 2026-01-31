@@ -117,4 +117,13 @@ public class Order {
                 id, this.product_id, this.user_id, this.quantity, status);
         return result;
     }
+
+    /**
+     * The method to set the status of the order
+     * @param new_status the new status
+     */
+    public void setStatus(String new_status){
+        this.status = new_status;
+        return;
+    }
 }
