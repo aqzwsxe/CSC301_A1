@@ -408,7 +408,7 @@ public class ProductHandler implements HttpHandler {
                 ProductService.productDatabase.remove(id);
                 sendResponse(exchange, 200, "{}\n");
             } else {
-                sendResponse(exchange,400, errorResponse);
+                sendResponse(exchange,404, errorResponse);
             }
         } else {
             sendResponse(exchange,400, errorResponse);
