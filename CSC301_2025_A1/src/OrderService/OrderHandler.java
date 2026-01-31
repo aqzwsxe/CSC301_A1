@@ -168,7 +168,8 @@ public class OrderHandler implements HttpHandler {
                         HttpResponse.BodyHandlers.ofByteArray()
                 );
             }
-            OrderService.orderDatabase.remove(orderId);
+//            OrderService.orderDatabase.remove(orderId);
+            order.setStatus("Cancelled");
             sendResponse(exchange, 200, "{\"status\": \"Order cancelled and stock restored\"}".getBytes());
         }catch (Exception e){}
     }
